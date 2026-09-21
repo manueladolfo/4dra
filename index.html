@@ -1103,11 +1103,19 @@
 
         <div class="form-group">
           <label for="select-model">Modelo de Gemini</label>
-          <select id="select-model" class="form-control">
-            <option value="gemini-2.5-flash">Gemini 2.5 Flash (Recomendado - Ultra rápido y preciso)</option>
-            <option value="gemini-1.5-flash">Gemini 1.5 Flash (Gran compatibilidad)</option>
-            <option value="gemini-1.5-pro">Gemini 1.5 Pro (Máxima capacidad de razonamiento)</option>
-          </select>
+          <div style="display: flex; gap: 8px;">
+            <select id="select-model" class="form-control" style="flex: 1;">
+              <option value="gemini-2.0-flash">Gemini 2.0 Flash (Recomendado - Muy rápido)</option>
+              <option value="gemini-1.5-flash">Gemini 1.5 Flash (Máxima compatibilidad)</option>
+              <option value="gemini-1.5-pro">Gemini 1.5 Pro (Razonamiento complejo)</option>
+              <option value="gemini-1.5-flash-8b">Gemini 1.5 Flash 8B (Económico)</option>
+            </select>
+            <button type="button" class="btn btn-secondary" onclick="detectAvailableModels(true)" id="btn-detect-models" title="Detectar modelos disponibles en tu cuenta">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+              Detectar
+            </button>
+          </div>
+          <div id="models-status-msg" style="font-size: 0.76rem; color: var(--text-secondary); margin-top: 4px;"></div>
         </div>
 
         <div style="background: rgba(59, 130, 246, 0.08); border: 1px solid rgba(59, 130, 246, 0.2); border-radius: var(--radius-md); padding: 12px 14px; font-size: 0.8rem; color: #93c5fd;">
@@ -1154,7 +1162,7 @@
 
     let appState = {
       apiKey: localStorage.getItem(STORAGE_KEY_API) || '',
-      model: localStorage.getItem(STORAGE_KEY_MODEL) || 'gemini-2.5-flash',
+      model: localStorage.getItem(STORAGE_KEY_MODEL) || 'gemini-2.0-flash',
       invoices: [],
       currentFilter: 'ALL',
       isProcessing: false
@@ -1182,23 +1190,91 @@
       document.getElementById('modal-api-key').classList.remove('open');
     }
 
-    function saveApiKey() {
+    async function detectAvailableModels(showAlert = false) {
+      const keyInput = (document.getElementById('input-api-key').value || appState.apiKey || '').trim();
+      const statusMsg = document.getElementById('models-status-msg');
+      const btn = document.getElementById('btn-detect-models');
+      
+      if (!keyInput) {
+        if (statusMsg) statusMsg.textContent = 'Introduce primero la API Key';
+        if (showAlert) showToast('Introduce primero tu clave de API', 'info');
+        return;
+      }
+
+      if (btn) btn.disabled = true;
+      if (statusMsg) statusMsg.textContent = 'Consultando modelos disponibles en Google...';
+
+      try {
+        const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${encodeURIComponent(keyInput)}`);
+        if (!resp.ok) {
+          const errText = await resp.text();
+          throw new Error(`Error (${resp.status}): ${errText}`);
+        }
+        const data = await resp.json();
+        const validModels = (data.models || []).filter(m => 
+          m.supportedGenerationMethods && 
+          m.supportedGenerationMethods.includes('generateContent') &&
+          m.name.includes('gemini')
+        );
+
+        if (validModels.length > 0) {
+          const select = document.getElementById('select-model');
+          select.innerHTML = '';
+          
+          let selectedSet = false;
+          validModels.forEach(m => {
+            const modelCode = m.name.replace(/^models\//, '');
+            const opt = document.createElement('option');
+            opt.value = modelCode;
+            opt.textContent = `${m.displayName || modelCode} (${modelCode})`;
+            
+            // Priorizar gemini-2.0-flash o gemini-1.5-flash
+            if (modelCode === appState.model) {
+              opt.selected = true;
+              selectedSet = true;
+            }
+            select.appendChild(opt);
+          });
+
+          if (!selectedSet) {
+            // Buscar gemini-2.0-flash o gemini-1.5-flash
+            const pref = validModels.find(m => m.name.includes('2.0-flash') || m.name.includes('1.5-flash'));
+            if (pref) {
+              select.value = pref.name.replace(/^models\//, '');
+            }
+          }
+
+          if (statusMsg) statusMsg.innerHTML = `<span style="color: #34d399;">✓ ${validModels.length} modelos detectados en tu cuenta</span>`;
+          if (showAlert) showToast(`Detectados ${validModels.length} modelos disponibles en tu cuenta`, 'success');
+        } else {
+          if (statusMsg) statusMsg.textContent = 'No se detectaron modelos compatibles';
+        }
+      } catch (err) {
+        console.warn('No se pudieron listar los modelos automáticamente:', err);
+        if (statusMsg) statusMsg.innerHTML = `<span style="color: #f87171;">Aviso: No se pudo auto-detectar lista (${err.message.slice(0, 45)}...)</span>`;
+        if (showAlert) showToast('Error al conectar con la API de Gemini: verifica la clave', 'error');
+      } finally {
+        if (btn) btn.disabled = false;
+      }
+    }
+
+    async function saveApiKey() {
       const keyInput = document.getElementById('input-api-key').value.trim();
-      const modelSelect = document.getElementById('select-model').value;
+      const modelSelect = document.getElementById('select-model').value.replace(/[‐-―]/g, '-').trim();
       
       appState.apiKey = keyInput;
-      appState.model = modelSelect;
+      appState.model = modelSelect || 'gemini-2.0-flash';
       
       if (keyInput) {
         localStorage.setItem(STORAGE_KEY_API, keyInput);
       } else {
         localStorage.removeItem(STORAGE_KEY_API);
       }
-      localStorage.setItem(STORAGE_KEY_MODEL, modelSelect);
+      localStorage.setItem(STORAGE_KEY_MODEL, appState.model);
       
       updateApiKeyBadge();
       closeApiKeyModal();
-      showToast('Configuración guardada correctamente', 'success');
+      showToast(`Guardado: usando ${appState.model}`, 'success');
     }
 
     function updateApiKeyBadge() {
@@ -1599,9 +1675,25 @@
     }
 
     async function callGeminiExtractInvoice(file, base64Data) {
-      const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${appState.model}:generateContent?key=${encodeURIComponent(appState.apiKey)}`;
+      // Lista de modelos a intentar si el configurado falla por 404
+      const currentClean = (appState.model || 'gemini-2.0-flash').replace(/[‐-―]/g, '-').replace(/^models\//, '').trim();
+      const candidateModels = [
+        currentClean,
+        'gemini-2.0-flash',
+        'gemini-1.5-flash',
+        'gemini-1.5-flash-latest',
+        'gemini-1.5-pro'
+      ];
+      // Eliminar duplicados manteniendo orden
+      const modelsToTry = [...new Set(candidateModels)];
 
-      const prompt = `Eres un experto contable español. Analiza con máxima precisión esta factura o ticket de compra y extrae sus datos fiscales obligatorios.
+      let lastError = null;
+
+      for (const modelToUse of modelsToTry) {
+        try {
+          const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${modelToUse}:generateContent?key=${encodeURIComponent(appState.apiKey)}`;
+
+          const prompt = `Eres un experto contable español. Analiza con máxima precisión esta factura o ticket de compra y extrae sus datos fiscales obligatorios.
 Devuelve EXACTAMENTE un objeto JSON con los siguientes campos numéricos y de texto:
 - "proveedor": Nombre fiscal o comercial del emisor/vendedor.
 - "nif": NIF, CIF o NIE del emisor (ej: B12345678 o 12345678Z).
@@ -1619,48 +1711,73 @@ IMPORTANTE:
 2. Si un dato no aparece, pon 0 en importes y cadena vacía en texto.
 Responde únicamente con el JSON sin bloques de código markdown ni texto adicional.`;
 
-      const requestBody = {
-        contents: [
-          {
-            role: "user",
-            parts: [
-              { text: prompt },
+          const requestBody = {
+            contents: [
               {
-                inlineData: {
-                  mimeType: file.type || (file.name.endsWith('.pdf') ? 'application/pdf' : 'image/jpeg'),
-                  data: base64Data
-                }
+                role: "user",
+                parts: [
+                  { text: prompt },
+                  {
+                    inlineData: {
+                      mimeType: file.type || (file.name.endsWith('.pdf') ? 'application/pdf' : 'image/jpeg'),
+                      data: base64Data
+                    }
+                  }
+                ]
               }
-            ]
+            ],
+            generationConfig: {
+              temperature: 0.1,
+              responseMimeType: "application/json"
+            }
+          };
+
+          const response = await fetch(endpoint, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(requestBody)
+          });
+
+          if (!response.ok) {
+            const errorDetails = await response.text();
+            // Si es 404 (modelo no encontrado en esta cuenta/versión), probamos con el siguiente candidato
+            if (response.status === 404) {
+              console.warn(`El modelo ${modelToUse} devolvió 404. Probando alternativa...`);
+              lastError = new Error(`Modelo ${modelToUse} no disponible (404)`);
+              continue;
+            }
+            throw new Error(`Error API Gemini (${response.status}): ${errorDetails}`);
           }
-        ],
-        generationConfig: {
-          temperature: 0.1,
-          responseMimeType: "application/json"
+
+          const result = await response.json();
+          const rawText = result.candidates?.[0]?.content?.parts?.[0]?.text;
+          
+          if (!rawText) {
+            throw new Error('Gemini no devolvió contenido');
+          }
+
+          // Si este modelo funcionó y era diferente al guardado, actualizarlo para las siguientes
+          if (modelToUse !== appState.model) {
+            appState.model = modelToUse;
+            localStorage.setItem(STORAGE_KEY_MODEL, modelToUse);
+            updateApiKeyBadge();
+            console.log(`Auto-ajustado modelo activo a: ${modelToUse}`);
+          }
+
+          // Limpieza por si devuelve bloques markdown ```json
+          const cleanJsonStr = rawText.replace(/```json/gi, '').replace(/```/g, '').trim();
+          return JSON.parse(cleanJsonStr);
+
+        } catch (err) {
+          lastError = err;
+          // Si el error no es 404 (ej. clave inválida 400/403), no reintentar modelos
+          if (!err.message.includes('404')) {
+            throw err;
+          }
         }
-      };
-
-      const response = await fetch(endpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(requestBody)
-      });
-
-      if (!response.ok) {
-        const errorDetails = await response.text();
-        throw new Error(`Error API Gemini (${response.status}): ${errorDetails}`);
       }
 
-      const result = await response.json();
-      const rawText = result.candidates?.[0]?.content?.parts?.[0]?.text;
-      
-      if (!rawText) {
-        throw new Error('Gemini no devolvió contenido');
-      }
-
-      // Limpieza por si devuelve bloques markdown ```json
-      const cleanJsonStr = rawText.replace(/```json/gi, '').replace(/```/g, '').trim();
-      return JSON.parse(cleanJsonStr);
+      throw lastError || new Error('No se encontró ningún modelo compatible disponible en tu cuenta');
     }
 
     function cleanNif(str) {
