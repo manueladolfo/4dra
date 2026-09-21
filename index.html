@@ -23,6 +23,12 @@
   <!-- ExcelJS y SheetJS para generación de Excel multihuja sin servidor -->
   <script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script>
+    (function() {
+      const t = localStorage.getItem('4dra_theme') || 'dark';
+      document.documentElement.setAttribute('data-theme', t);
+    })();
+  </script>
   
   <style>
     :root {
@@ -67,6 +73,45 @@
       --radius-md: 10px;
       --radius-lg: 14px;
       --radius-xl: 18px;
+    }
+
+    [data-theme="light"] {
+      --bg-main: #f8fafc;
+      --bg-surface: #ffffff;
+      --bg-surface-alt: #f1f5f9;
+      --bg-card: rgba(255, 255, 255, 0.9);
+      --border-subtle: #e2e8f0;
+      --border-focus: #2563eb;
+      
+      --text-primary: #0f172a;
+      --text-secondary: #475569;
+      --text-muted: #64748b;
+      
+      --color-primary: #2563eb;
+      --color-primary-hover: #1d4ed8;
+      --color-accent: #0284c7;
+      
+      /* Estados de auditoría para modo claro */
+      --status-cuadra-bg: #ecfdf5;
+      --status-cuadra-border: #a7f3d0;
+      --status-cuadra-text: #047857;
+      
+      --status-revisar-bg: #fffbeb;
+      --status-revisar-border: #fde68a;
+      --status-revisar-text: #b45309;
+      
+      --status-nocuadra-bg: #fef2f2;
+      --status-nocuadra-border: #fecaca;
+      --status-nocuadra-text: #b91c1c;
+      
+      --status-duplicada-bg: #faf5ff;
+      --status-duplicada-border: #e9d5ff;
+      --status-duplicada-text: #7e22ce;
+      
+      --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+      --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.07);
+      --shadow-lg: 0 10px 25px -3px rgba(0, 0, 0, 0.1);
+      --shadow-glow: 0 0 20px rgba(37, 99, 235, 0.1);
     }
 
     * {
@@ -441,58 +486,92 @@
       animation: spin 0.8s linear infinite;
     }
 
-    /* Barra de herramientas de la tabla */
-    .table-toolbar {
+    /* Barra de acciones principales centradas */
+    .hero-actions-bar {
       display: flex;
       align-items: center;
-      justify-content: space-between;
+      justify-content: center;
       flex-wrap: wrap;
-      gap: 16px;
-      padding-top: 8px;
+      gap: 12px;
+      margin: 8px 0 16px;
     }
-
-    .filter-tabs {
-      display: flex;
-      background: var(--bg-surface);
-      border: 1px solid var(--border-subtle);
+    .hero-actions-bar .btn {
+      padding: 11px 22px;
+      font-size: 0.92rem;
       border-radius: var(--radius-md);
-      padding: 4px;
-      gap: 4px;
+    }
+    .hero-actions-bar .btn-aux-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
 
+    /* Selector de categorías centrado (Segmented Pill Control) */
+    .category-filter-bar {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 4px 0 16px;
+      width: 100%;
+    }
+    .filter-tabs-centered {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: var(--bg-surface);
+      padding: 5px;
+      border-radius: 9999px;
+      border: 1px solid var(--border-subtle);
+      box-shadow: var(--shadow-sm);
+      max-width: 100%;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    .filter-tabs-centered::-webkit-scrollbar {
+      display: none;
+    }
     .filter-tab {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 7px 15px;
+      border-radius: 9999px;
+      font-size: 0.83rem;
+      font-weight: 600;
+      color: var(--text-secondary);
       background: transparent;
       border: none;
-      color: var(--text-secondary);
-      padding: 6px 14px;
-      font-size: 0.82rem;
-      font-weight: 600;
-      border-radius: var(--radius-sm);
       cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      transition: all 0.15s;
+      transition: all 0.18s ease;
+      white-space: nowrap;
     }
     .filter-tab:hover {
       color: var(--text-primary);
+      background: rgba(255, 255, 255, 0.05);
+    }
+    [data-theme="light"] .filter-tab:hover {
+      background: rgba(0, 0, 0, 0.05);
     }
     .filter-tab.active {
-      background: var(--bg-surface-alt);
       color: #ffffff;
-      box-shadow: var(--shadow-sm);
+      background: var(--bg-surface-alt);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+    }
+    [data-theme="light"] .filter-tab.active {
+      color: #0f172a;
+      background: #ffffff;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+      border: 1px solid var(--border-subtle);
     }
     .filter-tab .badge {
-      font-size: 0.7rem;
-      padding: 1px 6px;
+      font-size: 0.72rem;
+      padding: 1px 7px;
       border-radius: 9999px;
-      background: rgba(255, 255, 255, 0.08);
+      background: rgba(255, 255, 255, 0.1);
+      color: inherit;
     }
-
-    .table-actions {
-      display: flex;
-      align-items: center;
-      gap: 10px;
+    [data-theme="light"] .filter-tab .badge {
+      background: rgba(0, 0, 0, 0.08);
     }
 
     /* Tabla de Facturas */
@@ -508,29 +587,30 @@
 
     .table-responsive {
       width: 100%;
-      overflow-x: hidden;
+      overflow-x: auto; /* Permite desplazamiento horizontal fluido sin truncar celdas */
       max-height: 560px;
       position: relative;
     }
 
     table {
       width: 100%;
-      table-layout: fixed;
-      border-collapse: collapse;
+      border-collapse: separate;
+      border-spacing: 0;
       text-align: left;
-      font-size: 0.81rem;
+      font-size: 0.82rem;
+      min-width: 1060px; /* Garantiza que los números NUNCA se corten */
     }
 
     thead {
       position: sticky;
       top: 0;
       z-index: 10;
-      background: #111420;
+      background: var(--bg-surface);
       box-shadow: 0 1px 0 var(--border-subtle);
     }
 
     th {
-      padding: 10px 6px;
+      padding: 11px 8px;
       font-size: 0.72rem;
       font-weight: 700;
       text-transform: uppercase;
@@ -538,45 +618,86 @@
       color: var(--text-muted);
       border-bottom: 1px solid var(--border-subtle);
       white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
       user-select: none;
+      background: var(--bg-surface);
     }
 
     th.num, td.num {
       text-align: right;
       font-family: 'JetBrains Mono', monospace;
+      white-space: nowrap;
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* Columnas fijadas a la derecha para que el Total SIEMPRE esté visible */
+    th.col-total, td.col-total {
+      position: sticky;
+      right: 48px;
+      background: var(--bg-surface);
+      z-index: 4;
+      text-align: right;
+      font-weight: 800;
+      font-size: 0.95rem;
+      color: #60a5fa;
+      box-shadow: -6px 0 12px rgba(0, 0, 0, 0.22);
+      min-width: 120px;
+      padding-right: 12px;
+    }
+    [data-theme="light"] th.col-total, [data-theme="light"] td.col-total {
+      color: #2563eb;
+      box-shadow: -6px 0 12px rgba(0, 0, 0, 0.06);
+    }
+    thead th.col-total {
+      z-index: 15;
+    }
+
+    th.col-actions, td.col-actions {
+      position: sticky;
+      right: 0;
+      background: var(--bg-surface);
+      z-index: 4;
+      text-align: center;
+      width: 48px;
+      min-width: 48px;
+      padding: 8px 4px;
+    }
+    thead th.col-actions {
+      z-index: 15;
     }
 
     tbody tr {
       border-bottom: 1px solid rgba(255, 255, 255, 0.04);
       transition: background-color 0.12s;
     }
+    [data-theme="light"] tbody tr {
+      border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    }
 
     tbody tr:hover {
-      background-color: rgba(255, 255, 255, 0.025);
+      background-color: rgba(255, 255, 255, 0.035);
+    }
+    [data-theme="light"] tbody tr:hover {
+      background-color: rgba(0, 0, 0, 0.02);
+    }
+    tbody tr:hover td.col-total, tbody tr:hover td.col-actions {
+      background-color: var(--bg-surface-alt);
     }
 
     td {
-      padding: 8px 6px;
+      padding: 10px 8px;
       color: var(--text-primary);
       vertical-align: middle;
       white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
     }
 
     /* Celdas editables */
     .editable-cell {
-      padding: 3px 5px;
+      padding: 3px 6px;
       border-radius: var(--radius-sm);
       border: 1px solid transparent;
       outline: none;
       transition: all 0.15s;
       display: inline-block;
-      max-width: 100%;
-      overflow: hidden;
-      text-overflow: ellipsis;
       white-space: nowrap;
       cursor: text;
     }
@@ -864,23 +985,35 @@
       font-size: 1.15rem;
     }
 
-    /* Reglas de pantalla para Tablets y Móviles */
-    @media (max-width: 1024px) {
+    /* Reglas de pantalla para Tablets y Móviles (100% Automático) */
+    @media (max-width: 960px) {
       .table-responsive {
         display: none !important;
       }
       .cards-responsive {
         display: flex !important;
-      }
-      #btn-view-toggle {
-        display: none !important;
+        flex-direction: column;
+        gap: 12px;
+        padding: 14px;
       }
       .app-container {
-        padding: 16px;
+        padding: 16px 14px;
+      }
+      .hero-actions-bar {
+        flex-direction: column;
+        width: 100%;
+      }
+      .hero-actions-bar .btn {
+        width: 100%;
+        justify-content: center;
+      }
+      .hero-actions-bar .btn-aux-group {
+        width: 100%;
+        justify-content: center;
       }
       .kpi-grid {
-        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-        gap: 12px;
+        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+        gap: 10px;
       }
       .table-footer {
         align-items: flex-end;
@@ -891,22 +1024,15 @@
         gap: 14px;
       }
       .total-item span:last-child {
-        font-size: 1.02rem;
+        font-size: 1.05rem;
       }
     }
 
-    /* Control forzado de vista en Escritorio */
-    @media (min-width: 1025px) {
-      .force-cards .table-responsive {
-        display: none !important;
-      }
-      .force-cards .cards-responsive {
-        display: flex !important;
-      }
-      .force-table .table-responsive {
+    @media (min-width: 961px) {
+      .table-responsive {
         display: block !important;
       }
-      .force-table .cards-responsive {
+      .cards-responsive {
         display: none !important;
       }
     }
@@ -1160,20 +1286,10 @@
           <span id="api-key-status-text">Configurar Gemini API</span>
         </button>
 
-        <button class="btn btn-secondary" onclick="addManualRow()">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
-          Nueva fila
-        </button>
-
-        <button id="btn-export-excel" class="btn btn-success" onclick="exportToExcel()" disabled>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-            <polyline points="14 2 14 8 20 8"></polyline>
-            <line x1="8" y1="13" x2="16" y2="13"></line>
-            <line x1="8" y1="17" x2="16" y2="17"></line>
-            <polyline points="10 9 9 9 8 9"></polyline>
-          </svg>
-          Descargar Excel (3 hojas)
+        <!-- Selector Modo Claro / Oscuro -->
+        <button id="theme-toggle-btn" class="theme-toggle-btn" onclick="toggleTheme()" title="Alternar modo claro u oscuro">
+          <span id="theme-toggle-icon">☀️</span>
+          <span id="theme-toggle-text">Claro</span>
         </button>
       </div>
     </header>
@@ -1250,9 +1366,39 @@
       <span id="processing-count" style="font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; color: var(--text-secondary);">0/0</span>
     </div>
 
-    <!-- Tabla y controles -->
-    <div class="table-toolbar">
-      <div class="filter-tabs">
+    <!-- Barra de acciones principales centradas -->
+    <div class="hero-actions-bar">
+      <button id="btn-export-excel" class="btn btn-success" onclick="exportToExcel()" disabled>
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+          <polyline points="14 2 14 8 20 8"></polyline>
+          <line x1="8" y1="13" x2="16" y2="13"></line>
+          <line x1="8" y1="17" x2="16" y2="17"></line>
+          <polyline points="10 9 9 9 8 9"></polyline>
+        </svg>
+        Descargar Excel (3 hojas)
+      </button>
+
+      <button class="btn btn-secondary" onclick="addManualRow()">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+        Nueva fila
+      </button>
+
+      <div class="btn-aux-group">
+        <button class="btn btn-ghost" onclick="loadSampleInvoice()" title="Probar con facturas de ejemplo">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+          Cargar demo
+        </button>
+        <button class="btn btn-danger-ghost" onclick="clearAllData()" title="Limpiar todas las facturas">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+          Limpiar tabla
+        </button>
+      </div>
+    </div>
+
+    <!-- Selector de categorías centrado (Segmented Pill Control) -->
+    <div class="category-filter-bar">
+      <div class="filter-tabs-centered">
         <button class="filter-tab active" onclick="setFilter('ALL', this)">
           Todas <span class="badge" id="filter-count-all">0</span>
         </button>
@@ -1269,21 +1415,6 @@
           <span style="color: var(--status-duplicada-text);">●</span> Duplicadas <span class="badge" id="filter-count-duplicada">0</span>
         </button>
       </div>
-
-      <div class="table-actions">
-        <button class="btn btn-ghost" id="btn-toggle-view" onclick="toggleViewMode()" title="Alternar entre vista de tabla y tarjetas">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
-          <span id="view-mode-label">Tarjetas</span>
-        </button>
-        <button class="btn btn-ghost" onclick="loadSampleInvoice()" title="Probar con facturas de ejemplo">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
-          Cargar demo
-        </button>
-        <button class="btn btn-danger-ghost" onclick="clearAllData()">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-          Limpiar tabla
-        </button>
-      </div>
     </div>
 
     <!-- Contenedor de la Tabla y Tarjetas Responsivas -->
@@ -1292,17 +1423,17 @@
         <table id="invoices-table">
           <thead>
             <tr>
-              <th style="width: 11%;">Estado</th>
-              <th style="width: 10%;">Doc.</th>
-              <th style="width: 19%;">Proveedor</th>
-              <th style="width: 10%;">NIF / CIF</th>
-              <th style="width: 9%;">Fecha</th>
-              <th style="width: 9%;">Número</th>
-              <th class="num" style="width: 8%;">Base (€)</th>
-              <th class="num" style="width: 7%;">IVA (€)</th>
-              <th class="num" style="width: 7%;">IRPF (€)</th>
-              <th class="num" style="width: 9%;">Total (€)</th>
-              <th style="width: 4%; text-align: center;">✕</th>
+              <th style="min-width: 125px;">Estado</th>
+              <th style="min-width: 125px;">Doc. Original</th>
+              <th style="min-width: 200px;">Proveedor</th>
+              <th style="min-width: 110px;">NIF / CIF</th>
+              <th style="min-width: 105px;">Fecha</th>
+              <th style="min-width: 115px;">Número</th>
+              <th class="num" style="min-width: 105px;">Base (€)</th>
+              <th class="num" style="min-width: 95px;">IVA (€)</th>
+              <th class="num" style="min-width: 95px;">IRPF (€)</th>
+              <th class="num col-total" style="min-width: 125px;">Total (€)</th>
+              <th class="col-actions" style="width: 48px; text-align: center;">✕</th>
             </tr>
           </thead>
           <tbody id="invoices-tbody">
@@ -1452,6 +1583,7 @@
        INICIALIZACIÓN AL CARGAR LA PÁGINA
        ========================================================================== */
     window.addEventListener('DOMContentLoaded', () => {
+      initTheme();
       updateApiKeyBadge();
       loadSavedInvoices();
       setupDragAndDrop();
@@ -2254,24 +2386,37 @@ Los importes monetarios deben ser números decimales puros (sin símbolos de mon
     }
 
     /* ==========================================================================
-       RENDERIZADO DE LA TABLA Y EDICIÓN EN TIEMPO REAL (DUAL: TABLA + TARJETAS)
+       GESTIÓN DEL TEMA CLARO / OSCURO
        ========================================================================== */
-    function toggleViewMode() {
-      const card = document.getElementById('main-table-card');
-      const label = document.getElementById('view-mode-label');
-      if (card.classList.contains('force-cards')) {
-        card.classList.remove('force-cards');
-        card.classList.add('force-table');
-        if (label) label.textContent = 'Tabla';
-      } else if (card.classList.contains('force-table')) {
-        card.classList.remove('force-table');
-        if (label) label.textContent = 'Tarjetas';
+    function initTheme() {
+      const savedTheme = localStorage.getItem('4dra_theme') || 'dark';
+      applyTheme(savedTheme);
+    }
+
+    function toggleTheme() {
+      const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+      const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+      applyTheme(newTheme);
+      localStorage.setItem('4dra_theme', newTheme);
+      showToast(`Modo ${newTheme === 'dark' ? 'oscuro' : 'claro'} activado`, 'info');
+    }
+
+    function applyTheme(theme) {
+      document.documentElement.setAttribute('data-theme', theme);
+      const icon = document.getElementById('theme-toggle-icon');
+      const text = document.getElementById('theme-toggle-text');
+      if (theme === 'light') {
+        if (icon) icon.textContent = '🌙';
+        if (text) text.textContent = 'Oscuro';
       } else {
-        card.classList.add('force-cards');
-        if (label) label.textContent = 'Auto';
+        if (icon) icon.textContent = '☀️';
+        if (text) text.textContent = 'Claro';
       }
     }
 
+    /* ==========================================================================
+       RENDERIZADO DE LA TABLA Y EDICIÓN EN TIEMPO REAL (AUTOMÁTICO DUAL)
+       ========================================================================== */
     function renderTable() {
       const tbody = document.getElementById('invoices-tbody');
       const cardsWrapper = document.getElementById('view-cards-wrapper');
@@ -2297,7 +2442,7 @@ Los importes monetarios deben ser números decimales puros (sin símbolos de mon
       filtered.forEach((inv) => {
         const badgeConfig = getStatusBadgeConfig(inv.estado, inv.auditMensaje);
 
-        // 1. FILA DE TABLA (ESCRITORIO)
+        // 1. FILA DE TABLA (ESCRITORIO: Total y Acciones fijadas a la derecha)
         const tr = document.createElement('tr');
         tr.id = `row-${inv.id}`;
         tr.innerHTML = `
@@ -2360,13 +2505,13 @@ Los importes monetarios deben ser números decimales puros (sin símbolos de mon
               ${formatMoney(inv.irpf)}
             </span>
           </td>
-          <td class="num" style="font-weight: 700; color: #ffffff;">
+          <td class="num col-total">
             <span class="editable-cell" contenteditable="true" spellcheck="false"
                   onblur="updateInvoiceField('${inv.id}', 'total', this.innerText)">
-              ${formatMoney(inv.total)}
+              ${formatMoney(inv.total)} €
             </span>
           </td>
-          <td style="text-align: center;">
+          <td class="col-actions">
             <button class="btn btn-ghost" onclick="deleteInvoice('${inv.id}')" title="Eliminar fila" style="padding: 4px 6px; color: var(--text-muted);">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
             </button>
@@ -2754,7 +2899,7 @@ Los importes monetarios deben ser números decimales puros (sin símbolos de mon
           // Fila 1: Banner superior
           ws1.mergeCells('A1:K1');
           const t1 = ws1.getCell('A1');
-          t1.value = 'QUADRA AI  ·  REGISTRO Y AUDITORÍA FISCAL DE FACTURAS';
+          t1.value = '4DRA AI  ·  REGISTRO Y AUDITORÍA FISCAL DE FACTURAS';
           t1.font = { name: 'Calibri', size: 14, bold: true, color: { argb: C.white } };
           t1.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C.navyDark } };
           t1.alignment = { vertical: 'middle', horizontal: 'center' };
@@ -3224,7 +3369,7 @@ Los importes monetarios deben ser números decimales puros (sin símbolos de mon
 
           ws3.mergeCells('A1:B1');
           const t3 = ws3.getCell('A1');
-          t3.value = 'CUADRO DE MANDO Y RESUMEN EJECUTIVO  ·  QUADRA AI';
+          t3.value = 'CUADRO DE MANDO Y RESUMEN EJECUTIVO  ·  4DRA AI';
           t3.font = { name: 'Calibri', size: 13, bold: true, color: { argb: C.white } };
           t3.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C.navyDark } };
           t3.alignment = { vertical: 'middle', horizontal: 'center' };
