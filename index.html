@@ -1183,35 +1183,141 @@
     .toast.error { border-color: rgba(239, 68, 68, 0.4); }
     .toast.info { border-color: rgba(59, 130, 246, 0.4); }
 
-    /* Tooltip */
+    /* Selector de Tema Elegante con Iconos Vectoriales */
+    .theme-toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 14px;
+      background: var(--bg-surface-alt);
+      border: 1px solid var(--border-subtle);
+      border-radius: 9999px;
+      color: var(--text-secondary);
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 0.82rem;
+      font-weight: 600;
+      transition: all 0.2s ease;
+      user-select: none;
+      box-shadow: var(--shadow-sm);
+    }
+    .theme-toggle:hover {
+      background: var(--bg-surface);
+      color: var(--text-primary);
+      border-color: rgba(255, 255, 255, 0.2);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
+    }
+    [data-theme="light"] .theme-toggle {
+      background: #ffffff;
+      border-color: #e2e8f0;
+      color: #334155;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+    }
+    [data-theme="light"] .theme-toggle:hover {
+      background: #f8fafc;
+      border-color: #cbd5e1;
+      color: #0f172a;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    }
+
+    .theme-toggle-icon-box {
+      width: 20px;
+      height: 20px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .theme-svg {
+      width: 17px;
+      height: 17px;
+      transition: transform 0.25s ease;
+    }
+    .theme-svg-sun {
+      color: #f59e0b;
+      filter: drop-shadow(0 0 5px rgba(245, 158, 11, 0.5));
+    }
+    .theme-svg-moon {
+      color: #38bdf8;
+      filter: drop-shadow(0 0 5px rgba(56, 189, 248, 0.5));
+    }
+
+    /* Ocultar/mostrar según tema activo */
+    [data-theme="light"] .theme-svg-sun {
+      display: none;
+    }
+    [data-theme="light"] .theme-svg-moon {
+      display: block;
+    }
+    :root:not([data-theme="light"]) .theme-svg-moon {
+      display: none;
+    }
+    :root:not([data-theme="light"]) .theme-svg-sun {
+      display: block;
+    }
+
+    /* Tooltip moderno de alto contraste con motivo visible en hover */
     [data-tooltip] {
       position: relative;
     }
     [data-tooltip]::after {
       content: attr(data-tooltip);
       position: absolute;
-      bottom: 125%;
+      bottom: calc(100% + 9px);
       left: 50%;
-      transform: translateX(-50%);
-      background: #0f172a;
-      border: 1px solid rgba(255, 255, 255, 0.15);
+      transform: translateX(-50%) translateY(4px);
+      background: #090d16;
+      border: 1px solid rgba(255, 255, 255, 0.2);
       color: #f8fafc;
-      padding: 5px 10px;
-      border-radius: 6px;
-      font-size: 0.72rem;
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-size: 0.76rem;
+      font-weight: 500;
+      line-height: 1.4;
       white-space: normal;
       width: max-content;
-      max-width: 220px;
+      max-width: 320px;
       pointer-events: none;
       opacity: 0;
-      transition: opacity 0.15s, transform 0.15s;
-      box-shadow: var(--shadow-md);
-      z-index: 100;
+      visibility: hidden;
+      transition: opacity 0.18s ease, transform 0.18s ease, visibility 0.18s ease;
+      box-shadow: 0 10px 30px -4px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.08);
+      z-index: 10000;
       text-transform: none;
+      text-align: left;
+    }
+    [data-tooltip]::before {
+      content: '';
+      position: absolute;
+      bottom: calc(100% + 3px);
+      left: 50%;
+      transform: translateX(-50%);
+      border-width: 6px 6px 0 6px;
+      border-style: solid;
+      border-color: #090d16 transparent transparent transparent;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.18s ease, visibility 0.18s ease;
+      z-index: 10000;
+      pointer-events: none;
     }
     [data-tooltip]:hover::after {
       opacity: 1;
-      transform: translateX(-50%) translateY(-2px);
+      visibility: visible;
+      transform: translateX(-50%) translateY(0);
+    }
+    [data-tooltip]:hover::before {
+      opacity: 1;
+      visibility: visible;
+    }
+    [data-theme="light"] [data-tooltip]::after {
+      background: #0f172a;
+      color: #ffffff;
+      border-color: rgba(0, 0, 0, 0.25);
+      box-shadow: 0 10px 25px -4px rgba(0, 0, 0, 0.3);
+    }
+    [data-theme="light"] [data-tooltip]::before {
+      border-color: #0f172a transparent transparent transparent;
     }
 
     @keyframes spin {
@@ -1286,10 +1392,18 @@
           <span id="api-key-status-text">Configurar Gemini API</span>
         </button>
 
-        <!-- Selector Modo Claro / Oscuro -->
-        <button id="theme-toggle-btn" class="theme-toggle-btn" onclick="toggleTheme()" title="Alternar modo claro u oscuro">
-          <span id="theme-toggle-icon">☀️</span>
-          <span id="theme-toggle-text">Claro</span>
+        <!-- Selector de Modo Claro / Oscuro Elegante -->
+        <button id="theme-toggle-btn" class="theme-toggle" onclick="toggleTheme()" title="Cambiar a modo claro u oscuro" aria-label="Cambiar tema">
+          <span class="theme-toggle-icon-box">
+            <svg class="theme-svg theme-svg-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="4"/>
+              <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/>
+            </svg>
+            <svg class="theme-svg theme-svg-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>
+            </svg>
+          </span>
+          <span id="theme-toggle-text">Modo Claro</span>
         </button>
       </div>
     </header>
@@ -2049,8 +2163,8 @@
 
       if (numFactura && (nifEmisor || provEmisor)) {
         const currentIndex = allRows.findIndex(r => r.id === row.id);
-        // Solo marcamos como duplicada si YA existe una fila ANTERIOR con mismo número y emisor
         const primeraOcurrencia = allRows.findIndex(other => {
+          if (other.id === row.id) return false;
           const otherNum = (other.numero || '').toString().trim().toUpperCase();
           const otherNif = (other.nif || '').toString().trim().toUpperCase();
           const otherProv = (other.proveedor || '').toString().trim().toUpperCase();
@@ -2061,14 +2175,12 @@
           return false;
         });
 
-        if (primeraOcurrencia !== -1 && primeraOcurrencia < currentIndex) {
-          const docOriginal = allRows[primeraOcurrencia];
-          incidencias.push(`Factura repetida: coincide con la fila #${primeraOcurrencia + 1} (${docOriginal.fileName || docOriginal.proveedor})`);
+        if (primeraOcurrencia !== -1 && (currentIndex === -1 || primeraOcurrencia < currentIndex)) {
           return {
             estado: 'DUPLICADA',
             diferencia: 0,
-            incidencias: incidencias,
-            mensaje: `Duplicada: repetida de la fila #${primeraOcurrencia + 1}`
+            incidencias: ['Factura duplicada'],
+            mensaje: 'Factura duplicada: ya existe en el registro'
           };
         }
       }
@@ -2076,26 +2188,19 @@
       // 2. Validación de la Ecuación Contable: Base + IVA - IRPF = Total
       const sumaCalculada = base + iva - irpf;
       const diferencia = Math.abs(sumaCalculada - total);
-      // Margen de tolerancia de 2 céntimos por redondeos estándar
-      const cuadraMatematica = diferencia <= 0.02;
+      // Margen de tolerancia de 5 céntimos (0.05 €) para absorber redondeos decimales de IRPF e IVA combinados
+      const cuadraConTolerancia = diferencia <= 0.05;
+      // Comprobar también si el emisor imprimió el Total antes de descontar la retención (Base + IVA = Total)
+      const cuadraSinIrpf = irpf > 0 && Math.abs((base + iva) - total) <= 0.05;
 
-      if (!cuadraMatematica) {
-        const difTexto = (sumaCalculada - total).toFixed(2);
-        incidencias.push(`Descuadre contable de ${Math.abs(difTexto)} € (Base + IVA - IRPF = ${sumaCalculada.toFixed(2)} €, Total = ${total.toFixed(2)} €)`);
-        return {
-          estado: 'NO_CUADRA',
-          diferencia: diferencia,
-          incidencias: incidencias,
-          mensaje: `No cuadra por ${Math.abs(difTexto)} €`
-        };
-      }
+      const cuadraMatematica = cuadraConTolerancia || cuadraSinIrpf;
 
       // 3. Validación de Identificador Fiscal (NIF/CIF/NIE)
       let nifAdvertencia = false;
       const valNif = validarIdentificadorFiscal(row.nif);
       if (!valNif.valido) {
         nifAdvertencia = true;
-        incidencias.push(`NIF no validado: ${valNif.razon}`);
+        incidencias.push(`NIF no validado (${valNif.razon})`);
       }
 
       // 4. Validación de Fecha
@@ -2103,34 +2208,64 @@
       const valFecha = validarFecha(row.fecha);
       if (!valFecha.valida) {
         fechaAdvertencia = true;
-        incidencias.push(`Fecha: ${valFecha.razon}`);
+        incidencias.push(`Fecha (${valFecha.razon})`);
       }
 
       // 5. Coherencia de tipo impositivo de IVA en España (21%, 10%, 4%, 0%)
       if (base > 0 && iva > 0) {
         const pctCalculado = (iva / base) * 100;
-        const tiposOficiales = [21, 10, 4, 5, 0]; // 5% temporal de luz/alimentos especiales
-        const coincideTipo = tiposOficiales.some(tipo => Math.abs(pctCalculado - tipo) < 0.8);
+        const tiposOficiales = [21, 10, 4, 5, 0];
+        const coincideTipo = tiposOficiales.some(tipo => Math.abs(pctCalculado - tipo) < 0.9);
         if (!coincideTipo) {
           incidencias.push(`Tipo de IVA derivado (${pctCalculado.toFixed(1)}%) no habitual en España (21%, 10%, 4%)`);
         }
       }
 
-      // 6. Asignación de Estado: CUADRA vs REVISAR
-      if (nifAdvertencia || fechaAdvertencia || !row.numero || !row.proveedor) {
+      // 6. Campos mínimos obligatorios
+      if (!row.numero || !row.proveedor) {
+        incidencias.push('Falta número de factura o nombre de proveedor');
+      }
+
+      // 7. Determinación del Estado y Mensaje para el Hover / Tooltip
+      if (!cuadraMatematica) {
+        // Si el descuadre es pequeño (menor a 20 céntimos), sugerir revisión en vez de no cuadra radical
+        if (diferencia <= 0.20) {
+          return {
+            estado: 'REVISAR',
+            diferencia: diferencia,
+            incidencias: [`Diferencia de ${formatMoney(diferencia)} € entre suma calculada y total`],
+            mensaje: `Revisar: diferencia de ${formatMoney(diferencia)} € entre suma calculada (${formatMoney(sumaCalculada)} €) y total (${formatMoney(total)} €)`
+          };
+        }
+        return {
+          estado: 'NO_CUADRA',
+          diferencia: diferencia,
+          incidencias: [`Descuadre contable de ${formatMoney(diferencia)} €`],
+          mensaje: `No cuadra: Base (${formatMoney(base)} €) + IVA (${formatMoney(iva)} €) - IRPF (${formatMoney(irpf)} €) = ${formatMoney(sumaCalculada)} €, pero el total impreso es ${formatMoney(total)} € (descuadre de ${formatMoney(diferencia)} €)`
+        };
+      }
+
+      // Si las cuentas cuadran matemáticamente pero hay datos fiscales a revisar
+      if (incidencias.length > 0) {
         return {
           estado: 'REVISAR',
           diferencia: diferencia,
           incidencias: incidencias,
-          mensaje: incidencias.join(' · ') || 'Requiere revisión manual'
+          mensaje: `Revisar: ${incidencias.join(' · ')}`
         };
+      }
+
+      // Cuentas y datos 100% correctos
+      let msgCuadra = 'Correcto: la suma de base + IVA - IRPF cuadra con el total y los datos fiscales son válidos';
+      if (diferencia > 0.005) {
+        msgCuadra = `Correcto: cuentas cuadradas con ajuste de redondeo de ${diferencia.toFixed(2)} € en el total`;
       }
 
       return {
         estado: 'CUADRA',
         diferencia: diferencia,
-        incidencias: incidencias,
-        mensaje: 'Cuentas cuadradas y datos validados'
+        incidencias: [],
+        mensaje: msgCuadra
       };
     }
 
@@ -2263,20 +2398,31 @@
       const cleanMime = file.type || (file.name.toLowerCase().endsWith('.pdf') ? 'application/pdf' : 'image/jpeg');
       const cleanBase64 = base64Data.replace(/\s/g, '');
 
-      const prompt = `Eres un experto contable español. Analiza con máxima precisión esta factura o ticket de compra y extrae sus datos fiscales obligatorios.
-Devuelve EXACTAMENTE un objeto JSON con los siguientes campos numéricos y de texto (sin formato markdown adicional):
+      const prompt = `Eres un experto contable español de máxima precisión. Analiza esta factura o ticket de compra y extrae sus datos fiscales obligatorios.
+
+REGLAS OBLIGATORIAS DE EXTRACCIÓN:
+1. "proveedor" y "nif": Extrae SIEMPRE los datos de la empresa o profesional EMISOR (quien expide y cobra la factura, que suele figurar arriba o junto a la palabra FACTURA con su CIF/NIF). NUNCA extraigas los datos del cliente, arrendatario o receptor de la factura.
+2. "numero": Número o código de la factura (ej: "A 04", "FAC-2026-001", etc.).
+3. "fecha": Fecha de emisión de la factura en formato YYYY-MM-DD.
+4. "base": Base imponible total (suma de importes antes de impuestos).
+5. "iva": Cuota total de IVA en euros.
+6. "tipo_iva_pct": Tipo de IVA aplicado (ej: 21, 10, 4, etc.).
+7. "irpf": Si la factura incluye RETENCIÓN o IRPF (muy habitual en alquileres con 19% o profesionales con 15%), extrae el importe positivo en euros (ej: si indica "RETENCION 19 % -204,13 €", pon irpf: 204.13). Si no hay retención, pon 0.
+8. "total": Importe final a pagar / LÍQUIDO A PAGAR (tras sumar IVA y restar retención). Si figura "LÍQUIDO A PAGAR" o "TOTAL FACTURA", ese es el total exacto.
+
+Devuelve ÚNICAMENTE un objeto JSON puro (sin formato markdown):
 {
   "proveedor": "Nombre del emisor",
-  "nif": "NIF, CIF o NIE del emisor",
+  "nif": "CIF o NIF del emisor",
   "fecha": "YYYY-MM-DD",
-  "numero": "Número de factura o ticket",
-  "base": 100.00,
-  "iva": 21.00,
+  "numero": "Número de factura",
+  "base": 1074.38,
+  "iva": 225.62,
   "tipo_iva_pct": 21,
-  "irpf": 0.00,
-  "total": 121.00
+  "irpf": 204.13,
+  "total": 1095.90
 }
-Los importes monetarios deben ser números decimales puros (sin símbolos de moneda). Si un dato no existe, usa 0 o cadena vacía.`;
+Los importes monetarios deben ser números decimales puros (sin símbolos €). Si un dato no existe, usa 0 o cadena vacía.`;
 
       const requestBody = {
         contents: [
@@ -2403,14 +2549,14 @@ Los importes monetarios deben ser números decimales puros (sin símbolos de mon
 
     function applyTheme(theme) {
       document.documentElement.setAttribute('data-theme', theme);
-      const icon = document.getElementById('theme-toggle-icon');
       const text = document.getElementById('theme-toggle-text');
+      const btn = document.getElementById('theme-toggle-btn');
       if (theme === 'light') {
-        if (icon) icon.textContent = '🌙';
-        if (text) text.textContent = 'Oscuro';
+        if (text) text.textContent = 'Modo Oscuro';
+        if (btn) btn.title = 'Cambiar a modo oscuro';
       } else {
-        if (icon) icon.textContent = '☀️';
-        if (text) text.textContent = 'Claro';
+        if (text) text.textContent = 'Modo Claro';
+        if (btn) btn.title = 'Cambiar a modo claro';
       }
     }
 
@@ -2447,7 +2593,7 @@ Los importes monetarios deben ser números decimales puros (sin símbolos de mon
         tr.id = `row-${inv.id}`;
         tr.innerHTML = `
           <td>
-            <span class="status-badge ${badgeConfig.className}" data-tooltip="${escapeHtml(inv.auditMensaje || '')}">
+            <span class="status-badge ${badgeConfig.className}" data-tooltip="${escapeHtml(inv.auditMensaje || '')}" title="${escapeHtml(inv.auditMensaje || '')}">
               ${badgeConfig.icon}
               ${badgeConfig.text}
             </span>
@@ -2526,7 +2672,7 @@ Los importes monetarios deben ser números decimales puros (sin símbolos de mon
           card.id = `card-${inv.id}`;
           card.innerHTML = `
             <div class="invoice-card-header">
-              <span class="status-badge ${badgeConfig.className}" data-tooltip="${escapeHtml(inv.auditMensaje || '')}">
+              <span class="status-badge ${badgeConfig.className}" data-tooltip="${escapeHtml(inv.auditMensaje || '')}" title="${escapeHtml(inv.auditMensaje || '')}">
                 ${badgeConfig.icon}
                 ${badgeConfig.text}
               </span>
