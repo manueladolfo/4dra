@@ -1,0 +1,143 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <defs>
+    <!-- Gradiente de fondo del icono -->
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0B0F19" />
+      <stop offset="50%" stop-color="#111827" />
+      <stop offset="100%" stop-color="#070A12" />
+    </linearGradient>
+
+    <!-- Gradiente para el borde exterior con brillo -->
+    <linearGradient id="borderGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#3B82F6" stop-opacity="0.8" />
+      <stop offset="50%" stop-color="#06B6D4" stop-opacity="0.3" />
+      <stop offset="100%" stop-color="#1D4ED8" stop-opacity="0.6" />
+    </linearGradient>
+
+    <!-- Gradiente de la factura/ticket -->
+    <linearGradient id="ticketGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF" />
+      <stop offset="100%" stop-color="#F1F5F9" />
+    </linearGradient>
+
+    <!-- Gradiente del número 4 -->
+    <linearGradient id="num4Grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#2563EB" />
+      <stop offset="50%" stop-color="#0284C7" />
+      <stop offset="100%" stop-color="#06B6D4" />
+    </linearGradient>
+
+    <!-- Gradiente del rayo escáner IA -->
+    <linearGradient id="scanGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#06B6D4" stop-opacity="0" />
+      <stop offset="25%" stop-color="#38BDF8" stop-opacity="0.8" />
+      <stop offset="50%" stop-color="#FFFFFF" stop-opacity="1" />
+      <stop offset="75%" stop-color="#38BDF8" stop-opacity="0.8" />
+      <stop offset="100%" stop-color="#06B6D4" stop-opacity="0" />
+    </linearGradient>
+
+    <!-- Gradiente del badge de verificación -->
+    <linearGradient id="checkGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#10B981" />
+      <stop offset="100%" stop-color="#059669" />
+    </linearGradient>
+
+    <!-- Filtros de sombra -->
+    <filter id="dropShadow" x="-10%" y="-10%" width="130%" height="130%">
+      <feDropShadow dx="0" dy="16" stdDeviation="20" flood-color="#000000" flood-opacity="0.5" />
+    </filter>
+    <filter id="glowCyan" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="8" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+
+  <!-- Contenedor squircle con borde sutil iluminado -->
+  <rect x="16" y="16" width="480" height="480" rx="108" ry="108" fill="url(#bgGrad)" />
+  <rect x="16" y="16" width="480" height="480" rx="108" ry="108" fill="none" stroke="url(#borderGrad)" stroke-width="4" />
+
+  <!-- Documento / Factura principal con sombra -->
+  <g filter="url(#dropShadow)">
+    <!-- Cuerpo del ticket/factura con esquina doblada -->
+    <path d="M 120 100 
+             L 320 100 
+             L 392 172 
+             L 392 390 
+             C 392 406, 378 418, 362 418 
+             L 150 418 
+             C 134 418, 120 406, 120 390 
+             Z" 
+          fill="url(#ticketGrad)" />
+
+    <!-- Doblez de la esquina superior derecha -->
+    <path d="M 320 100 
+             L 320 156 
+             C 320 166, 328 172, 338 172 
+             L 392 172 
+             Z" 
+          fill="#CBD5E1" />
+    <path d="M 320 100 
+             L 392 172 
+             L 320 172 
+             Z" 
+          fill="#3B82F6" opacity="0.85" />
+  </g>
+
+  <!-- Líneas de cabecera de la factura -->
+  <rect x="156" y="142" width="130" height="12" rx="6" fill="#94A3B8" opacity="0.6" />
+  <rect x="156" y="168" width="80" height="10" rx="5" fill="#CBD5E1" opacity="0.7" />
+
+  <!-- Rayo de escaneo IA -->
+  <line x1="120" y1="210" x2="392" y2="210" stroke="url(#scanGrad)" stroke-width="4" filter="url(#glowCyan)" />
+
+  <!-- Gran número '4' estilizado en el centro de la factura -->
+  <g>
+    <!-- Sombra suave detrás del 4 -->
+    <path d="M 284 218 
+             L 204 330 
+             L 284 330 
+             L 284 366 
+             L 316 366 
+             L 316 330 
+             L 344 330 
+             L 344 300 
+             L 316 300 
+             L 316 218 
+             Z
+             M 284 300 
+             L 242 300 
+             L 284 242 
+             Z" 
+          fill="#000000" opacity="0.12" transform="translate(0, 4)" />
+
+    <!-- El 4 principal con gradiente vívido -->
+    <path d="M 284 218 
+             L 204 330 
+             L 284 330 
+             L 284 366 
+             L 316 366 
+             L 316 330 
+             L 344 330 
+             L 344 300 
+             L 316 300 
+             L 316 218 
+             Z
+             M 284 300 
+             L 242 300 
+             L 284 242 
+             Z" 
+          fill="url(#num4Grad)" />
+  </g>
+
+  <!-- Puntos y cuadrícula inferior simulando celdas Excel -->
+  <rect x="156" y="380" width="46" height="8" rx="4" fill="#94A3B8" opacity="0.5" />
+  <rect x="214" y="380" width="46" height="8" rx="4" fill="#94A3B8" opacity="0.5" />
+  <rect x="272" y="380" width="56" height="8" rx="4" fill="#38BDF8" opacity="0.8" />
+
+  <!-- Medalla/Badge de verificación de auditoría contable (Esquina inferior derecha) -->
+  <g filter="url(#dropShadow)">
+    <circle cx="372" cy="380" r="44" fill="url(#checkGrad)" stroke="#0B0F19" stroke-width="6" />
+    <!-- Marca de verificación (Checkmark blanco) -->
+    <path d="M 354 380 L 368 394 L 394 366" fill="none" stroke="#FFFFFF" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" />
+  </g>
+</svg>

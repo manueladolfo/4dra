@@ -3,13 +3,24 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Quadra | De Facturas y Tickets a Excel</title>
-  <meta name="description" content="Pasa tus facturas y tickets a Excel con IA y auditoría contable en un solo archivo.">
+  <title>4dra | De Facturas y Tickets a Excel</title>
+  <meta name="description" content="4dra: Pasa tus facturas y tickets a Excel con IA y auditoría contable en un solo archivo.">
+  
+  <!-- Iconos para Web, Tablet, iPhone y Android (PWA) -->
+  <link rel="icon" type="image/svg+xml" href="icons/icon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png">
+  <link rel="manifest" href="manifest.json">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="4dra">
+  <meta name="theme-color" content="#0B0F19">
+  
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   
-  <!-- SheetJS para generación de Excel multihuja sin servidor -->
+  <!-- ExcelJS y SheetJS para generación de Excel multihuja sin servidor -->
   <script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   
@@ -109,34 +120,56 @@
     }
 
     .brand-logo {
-      width: 44px;
-      height: 44px;
-      background: linear-gradient(135deg, #2563eb, #06b6d4);
-      border-radius: var(--radius-md);
+      width: 58px;
+      height: 58px;
+      min-width: 58px;
+      background: linear-gradient(135deg, #1e3a8a, #0284c7 55%, #06b6d4);
+      border-radius: 16px;
       display: flex;
       align-items: center;
       justify-content: center;
-      box-shadow: 0 4px 14px rgba(37, 99, 235, 0.4);
+      box-shadow: 0 8px 24px rgba(6, 182, 212, 0.25), 0 4px 12px rgba(37, 99, 235, 0.35);
+      border: 1px solid rgba(255, 255, 255, 0.22);
       color: white;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      cursor: pointer;
+    }
+
+    .brand-logo:hover {
+      transform: scale(1.05);
+      box-shadow: 0 12px 28px rgba(6, 182, 212, 0.35), 0 6px 18px rgba(37, 99, 235, 0.45);
     }
 
     .brand-logo svg {
-      width: 24px;
-      height: 24px;
+      width: 40px;
+      height: 40px;
     }
 
     .brand-text h1 {
-      font-size: 1.5rem;
+      font-size: 1.75rem;
       font-weight: 800;
-      letter-spacing: -0.02em;
-      background: linear-gradient(90deg, #ffffff 40%, #94a3b8);
+      letter-spacing: -0.03em;
+      line-height: 1.1;
+      display: flex;
+      align-items: center;
+      gap: 1px;
+    }
+
+    .brand-text h1 .brand-num {
+      background: linear-gradient(135deg, #38bdf8, #06b6d4);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
-      line-height: 1.2;
+      font-size: 2rem;
+    }
+
+    .brand-text h1 .brand-name {
+      background: linear-gradient(90deg, #ffffff 60%, #cbd5e1);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
     }
 
     .brand-text p {
-      font-size: 0.85rem;
+      font-size: 0.84rem;
       color: var(--text-secondary);
     }
 
@@ -475,16 +508,17 @@
 
     .table-responsive {
       width: 100%;
-      overflow-x: auto;
-      max-height: 540px;
+      overflow-x: hidden;
+      max-height: 560px;
       position: relative;
     }
 
     table {
       width: 100%;
+      table-layout: fixed;
       border-collapse: collapse;
       text-align: left;
-      font-size: 0.86rem;
+      font-size: 0.81rem;
     }
 
     thead {
@@ -496,14 +530,16 @@
     }
 
     th {
-      padding: 12px 14px;
-      font-size: 0.75rem;
+      padding: 10px 6px;
+      font-size: 0.72rem;
       font-weight: 700;
       text-transform: uppercase;
-      letter-spacing: 0.05em;
+      letter-spacing: 0.04em;
       color: var(--text-muted);
       border-bottom: 1px solid var(--border-subtle);
       white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
       user-select: none;
     }
 
@@ -522,21 +558,26 @@
     }
 
     td {
-      padding: 10px 14px;
+      padding: 8px 6px;
       color: var(--text-primary);
       vertical-align: middle;
       white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     /* Celdas editables */
     .editable-cell {
-      padding: 4px 8px;
+      padding: 3px 5px;
       border-radius: var(--radius-sm);
       border: 1px solid transparent;
       outline: none;
       transition: all 0.15s;
-      min-width: 60px;
       display: inline-block;
+      max-width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
       cursor: text;
     }
 
@@ -549,27 +590,35 @@
       border-color: var(--border-focus);
       background: #1e2538;
       box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.25);
+      white-space: normal;
+      overflow: visible;
+      position: relative;
+      z-index: 15;
     }
 
     /* Badges de Estado */
     .status-badge {
       display: inline-flex;
       align-items: center;
-      gap: 6px;
-      padding: 4px 10px;
+      gap: 5px;
+      padding: 3px 8px;
       border-radius: 9999px;
-      font-size: 0.74rem;
+      font-size: 0.72rem;
       font-weight: 700;
       letter-spacing: 0.02em;
       text-transform: uppercase;
       white-space: nowrap;
       cursor: help;
       position: relative;
+      max-width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     .status-badge .badge-icon {
       width: 12px;
       height: 12px;
+      flex-shrink: 0;
     }
 
     .status-cuadra {
@@ -600,18 +649,19 @@
     .doc-preview-btn {
       display: inline-flex;
       align-items: center;
-      gap: 6px;
+      gap: 5px;
       background: rgba(255, 255, 255, 0.05);
       border: 1px solid var(--border-subtle);
-      padding: 4px 8px;
+      padding: 3px 6px;
       border-radius: var(--radius-sm);
       color: var(--text-secondary);
-      font-size: 0.76rem;
+      font-size: 0.74rem;
       cursor: pointer;
       transition: all 0.15s;
-      max-width: 130px;
+      max-width: 100%;
       overflow: hidden;
       text-overflow: ellipsis;
+      white-space: nowrap;
     }
     .doc-preview-btn:hover {
       background: rgba(59, 130, 246, 0.15);
@@ -636,40 +686,229 @@
       opacity: 0.5;
     }
 
-    /* Pie de la tabla con totales */
-    .table-footer {
-      padding: 14px 20px;
-      background: #111420;
-      border-top: 1px solid var(--border-subtle);
+    /* Vista de Tarjetas Responsivas para Tablets y Móviles (Sin scroll lateral) */
+    .cards-responsive {
+      display: none;
+      flex-direction: column;
+      gap: 12px;
+      padding: 16px;
+      max-height: 580px;
+      overflow-y: auto;
+    }
+
+    .invoice-card {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 14px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      transition: all 0.15s ease;
+    }
+    .invoice-card:hover {
+      background: rgba(255, 255, 255, 0.035);
+      border-color: rgba(255, 255, 255, 0.14);
+    }
+
+    .card-row-head {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      flex-wrap: wrap;
-      gap: 16px;
+      gap: 12px;
+    }
+
+    .card-total-box {
+      text-align: right;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+    }
+    .card-total-label {
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+    .card-total-value {
+      font-size: 1.18rem;
+      font-weight: 800;
+      color: #60a5fa;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .card-fields-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 8px 12px;
+      background: rgba(0, 0, 0, 0.22);
+      border-radius: var(--radius-sm);
+      padding: 10px 12px;
+      border: 1px solid rgba(255, 255, 255, 0.04);
+    }
+
+    .card-field {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      min-width: 0;
+    }
+    .card-field-title {
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      font-weight: 600;
+      letter-spacing: 0.03em;
+    }
+    .card-field-content {
       font-size: 0.85rem;
+      color: var(--text-primary);
+      font-weight: 500;
+    }
+
+    .card-econ-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      background: #111420;
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
+      padding: 8px 12px;
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .card-econ-cell {
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+    }
+    .card-econ-cell span:first-child {
+      font-size: 0.65rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+    }
+    .card-econ-cell span:last-child {
+      font-size: 0.86rem;
+      color: var(--text-secondary);
+      font-weight: 600;
+    }
+
+    .card-actions-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .card-alert-box {
+      font-size: 0.76rem;
+      color: #f87171;
+      background: rgba(239, 68, 68, 0.09);
+      border: 1px solid rgba(239, 68, 68, 0.22);
+      border-radius: var(--radius-sm);
+      padding: 6px 10px;
+      line-height: 1.35;
+    }
+
+    /* Pie de la tabla con totales - SIEMPRE ALINEADO A LA DERECHA */
+    .table-footer {
+      padding: 16px 20px;
+      background: #111420;
+      border-top: 1px solid var(--border-subtle);
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end; /* Alineado a la derecha en cualquier pantalla */
+      text-align: right;
+      gap: 12px;
+      width: 100%;
+    }
+
+    .footer-hint {
+      color: var(--text-secondary);
+      font-size: 0.82rem;
+      text-align: right;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 6px;
+      width: 100%;
     }
 
     .totals-summary {
       display: flex;
       align-items: center;
+      justify-content: flex-end; /* Alineado a la derecha */
       gap: 24px;
+      flex-wrap: wrap;
       font-family: 'JetBrains Mono', monospace;
+      width: 100%;
     }
     .total-item {
       display: flex;
       flex-direction: column;
+      align-items: flex-end; /* Alineado a la derecha */
+      text-align: right;
       gap: 2px;
     }
     .total-item span:first-child {
-      font-size: 0.7rem;
+      font-size: 0.72rem;
       color: var(--text-muted);
       text-transform: uppercase;
       font-family: 'Plus Jakarta Sans', sans-serif;
+      font-weight: 600;
+      letter-spacing: 0.04em;
     }
     .total-item span:last-child {
-      font-weight: 700;
+      font-weight: 800;
       color: #ffffff;
-      font-size: 0.95rem;
+      font-size: 1.15rem;
+    }
+
+    /* Reglas de pantalla para Tablets y Móviles */
+    @media (max-width: 1024px) {
+      .table-responsive {
+        display: none !important;
+      }
+      .cards-responsive {
+        display: flex !important;
+      }
+      #btn-view-toggle {
+        display: none !important;
+      }
+      .app-container {
+        padding: 16px;
+      }
+      .kpi-grid {
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 12px;
+      }
+      .table-footer {
+        align-items: flex-end;
+        text-align: right;
+      }
+      .totals-summary {
+        justify-content: flex-end;
+        gap: 14px;
+      }
+      .total-item span:last-child {
+        font-size: 1.02rem;
+      }
+    }
+
+    /* Control forzado de vista en Escritorio */
+    @media (min-width: 1025px) {
+      .force-cards .table-responsive {
+        display: none !important;
+      }
+      .force-cards .cards-responsive {
+        display: flex !important;
+      }
+      .force-table .table-responsive {
+        display: block !important;
+      }
+      .force-table .cards-responsive {
+        display: none !important;
+      }
     }
 
     /* Modales */
@@ -879,16 +1118,38 @@
     <!-- Header -->
     <header>
       <div class="brand-section">
-        <div class="brand-logo">
-          <!-- Logo SVG Quadra -->
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="3" y="3" width="18" height="18" rx="4"></rect>
-            <path d="m9 9 6 6"></path>
-            <path d="m15 9-6 6"></path>
+        <div class="brand-logo" title="4dra - Extractor de facturas y tickets a Excel">
+          <!-- Logo temático 4dra: Factura/Ticket + Escáner IA + 4 + Verificación contable -->
+          <svg viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="brand4Grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#2563eb"/>
+                <stop offset="50%" stop-color="#0284c7"/>
+                <stop offset="100%" stop-color="#06b6d4"/>
+              </linearGradient>
+            </defs>
+            <!-- Hoja de Factura con esquina doblada -->
+            <path d="M 120 75 L 320 75 L 392 147 L 392 415 C 392 429, 380 440, 364 440 L 148 440 C 132 440, 120 429, 120 415 Z" fill="#FFFFFF"/>
+            <path d="M 320 75 L 320 137 C 320 143, 324 147, 330 147 L 392 147 Z" fill="#CBD5E1"/>
+            <path d="M 320 75 L 392 147 L 320 147 Z" fill="#0284C7" opacity="0.9"/>
+            <!-- Líneas de cabecera factura -->
+            <rect x="156" y="116" width="130" height="12" rx="6" fill="#94A3B8" opacity="0.6"/>
+            <rect x="156" y="138" width="80" height="10" rx="5" fill="#CBD5E1" opacity="0.7"/>
+            <!-- Láser de escaneo AI -->
+            <line x1="120" y1="184" x2="392" y2="184" stroke="#06B6D4" stroke-width="5" stroke-linecap="round"/>
+            <!-- Número 4 estilizado -->
+            <path d="M 284 195 L 198 320 L 284 320 L 284 362 L 320 362 L 320 320 L 350 320 L 350 286 L 320 286 L 320 195 Z M 284 286 L 240 286 L 284 220 Z" fill="url(#brand4Grad)"/>
+            <!-- Celdas tabla Excel -->
+            <rect x="156" y="380" width="40" height="8" rx="4" fill="#94A3B8" opacity="0.5"/>
+            <rect x="204" y="380" width="40" height="8" rx="4" fill="#94A3B8" opacity="0.5"/>
+            <rect x="252" y="380" width="50" height="8" rx="4" fill="#38BDF8" opacity="0.8"/>
+            <!-- Medalla verificación de auditoría -->
+            <circle cx="372" cy="380" r="42" fill="#10B981" stroke="#0B0F19" stroke-width="6"/>
+            <path d="M 354 380 L 368 394 L 394 366" stroke="#FFFFFF" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
         </div>
         <div class="brand-text">
-          <h1>Quadra</h1>
+          <h1><span class="brand-num">4</span><span class="brand-name">dra</span></h1>
           <p>Extractor de facturas y tickets con auditoría contable a Excel</p>
         </div>
       </div>
@@ -1010,6 +1271,10 @@
       </div>
 
       <div class="table-actions">
+        <button class="btn btn-ghost" id="btn-toggle-view" onclick="toggleViewMode()" title="Alternar entre vista de tabla y tarjetas">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+          <span id="view-mode-label">Tarjetas</span>
+        </button>
         <button class="btn btn-ghost" onclick="loadSampleInvoice()" title="Probar con facturas de ejemplo">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
           Cargar demo
@@ -1021,49 +1286,54 @@
       </div>
     </div>
 
-    <!-- Contenedor de la Tabla -->
-    <div class="table-card">
-      <div class="table-responsive">
+    <!-- Contenedor de la Tabla y Tarjetas Responsivas -->
+    <div class="table-card" id="main-table-card">
+      <div class="table-responsive" id="view-table-wrapper">
         <table id="invoices-table">
           <thead>
             <tr>
-              <th style="width: 130px;">Estado</th>
-              <th style="width: 140px;">Doc. Original</th>
-              <th>Proveedor</th>
-              <th style="width: 110px;">NIF / CIF</th>
-              <th style="width: 110px;">Fecha</th>
-              <th style="width: 110px;">Número</th>
-              <th class="num" style="width: 100px;">Base (€)</th>
-              <th class="num" style="width: 90px;">IVA (€)</th>
-              <th class="num" style="width: 90px;">IRPF (€)</th>
-              <th class="num" style="width: 110px;">Total (€)</th>
-              <th style="width: 50px; text-align: center;">Acciones</th>
+              <th style="width: 11%;">Estado</th>
+              <th style="width: 10%;">Doc.</th>
+              <th style="width: 19%;">Proveedor</th>
+              <th style="width: 10%;">NIF / CIF</th>
+              <th style="width: 9%;">Fecha</th>
+              <th style="width: 9%;">Número</th>
+              <th class="num" style="width: 8%;">Base (€)</th>
+              <th class="num" style="width: 7%;">IVA (€)</th>
+              <th class="num" style="width: 7%;">IRPF (€)</th>
+              <th class="num" style="width: 9%;">Total (€)</th>
+              <th style="width: 4%; text-align: center;">✕</th>
             </tr>
           </thead>
           <tbody id="invoices-tbody">
             <!-- Filas dinámicas -->
           </tbody>
         </table>
+      </div>
 
-        <!-- Estado vacío si no hay filas -->
-        <div class="empty-state" id="empty-state">
-          <svg class="empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-            <polyline points="14 2 14 8 20 8"></polyline>
-            <circle cx="10" cy="13" r="2"></circle>
-            <line x1="16" y1="17" x2="8" y2="17"></line>
-          </svg>
-          <div style="font-weight: 600; font-size: 1rem; color: #cbd5e1;">Aún no has añadido ninguna factura</div>
-          <div style="font-size: 0.85rem; max-width: 440px;">
-            Arrastra archivos a la zona superior, pulsa «Cargar demo» para hacer una prueba inmediata o pulsa «Nueva fila» para teclear una factura a mano.
-          </div>
+      <!-- Vista alternativa en tarjetas (100% responsiva para móvil y tablet sin scroll horizontal) -->
+      <div class="cards-responsive" id="view-cards-wrapper">
+        <!-- Tarjetas dinámicas -->
+      </div>
+
+      <!-- Estado vacío si no hay filas -->
+      <div class="empty-state" id="empty-state">
+        <svg class="empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+          <polyline points="14 2 14 8 20 8"></polyline>
+          <circle cx="10" cy="13" r="2"></circle>
+          <line x1="16" y1="17" x2="8" y2="17"></line>
+        </svg>
+        <div style="font-weight: 600; font-size: 1rem; color: #cbd5e1;">Aún no has añadido ninguna factura</div>
+        <div style="font-size: 0.85rem; max-width: 440px;">
+          Arrastra archivos a la zona superior, pulsa «Cargar demo» para hacer una prueba inmediata o pulsa «Nueva fila» para teclear una factura a mano.
         </div>
       </div>
 
-      <!-- Pie de tabla con totales -->
+      <!-- Pie de tabla con totales alineados a la derecha -->
       <div class="table-footer">
-        <div style="color: var(--text-secondary); font-size: 0.8rem;">
-          💡 Puedes hacer <strong>doble clic o pulsar en cualquier celda</strong> para editarla. Las cuentas se recalcularán al vuelo.
+        <div class="footer-hint">
+          💡 Puedes hacer <strong>clic o doble clic en cualquier celda</strong> para editarla. Las cuentas se recalcularán al vuelo.
         </div>
         <div class="totals-summary">
           <div class="total-item">
@@ -1078,7 +1348,7 @@
             <span>Total IRPF</span>
             <span id="footer-sum-irpf">0,00 €</span>
           </div>
-          <div class="total-item">
+          <div class="total-item highlight">
             <span>Total Facturado</span>
             <span id="footer-sum-total" style="color: #60a5fa;">0,00 €</span>
           </div>
@@ -1159,13 +1429,20 @@
     /* ==========================================================================
        ESTADO GLOBAL DE LA APLICACIÓN
        ========================================================================== */
-    const STORAGE_KEY_API = 'quadra_gemini_api_key';
-    const STORAGE_KEY_MODEL = 'quadra_gemini_model';
-    const STORAGE_KEY_DATA = 'quadra_invoices_v1';
+    const STORAGE_KEY_API = '4dra_gemini_api_key';
+    const STORAGE_KEY_MODEL = '4dra_gemini_model';
+    const STORAGE_KEY_DATA = '4dra_invoices_v1';
+
+    // Recuperar datos con retrocompatibilidad
+    const savedApi = localStorage.getItem(STORAGE_KEY_API) || localStorage.getItem('quadra_gemini_api_key') || '';
+    const savedModel = localStorage.getItem(STORAGE_KEY_MODEL) || localStorage.getItem('quadra_gemini_model') || 'gemini-2.0-flash';
+    if (!localStorage.getItem(STORAGE_KEY_DATA) && localStorage.getItem('quadra_invoices_v1')) {
+      try { localStorage.setItem(STORAGE_KEY_DATA, localStorage.getItem('quadra_invoices_v1')); } catch (e) {}
+    }
 
     let appState = {
-      apiKey: localStorage.getItem(STORAGE_KEY_API) || '',
-      model: localStorage.getItem(STORAGE_KEY_MODEL) || 'gemini-2.0-flash',
+      apiKey: savedApi,
+      model: savedModel,
       invoices: [],
       currentFilter: 'ALL',
       isProcessing: false
@@ -1977,14 +2254,32 @@ Los importes monetarios deben ser números decimales puros (sin símbolos de mon
     }
 
     /* ==========================================================================
-       RENDERIZADO DE LA TABLA Y EDICIÓN EN TIEMPO REAL
+       RENDERIZADO DE LA TABLA Y EDICIÓN EN TIEMPO REAL (DUAL: TABLA + TARJETAS)
        ========================================================================== */
+    function toggleViewMode() {
+      const card = document.getElementById('main-table-card');
+      const label = document.getElementById('view-mode-label');
+      if (card.classList.contains('force-cards')) {
+        card.classList.remove('force-cards');
+        card.classList.add('force-table');
+        if (label) label.textContent = 'Tabla';
+      } else if (card.classList.contains('force-table')) {
+        card.classList.remove('force-table');
+        if (label) label.textContent = 'Tarjetas';
+      } else {
+        card.classList.add('force-cards');
+        if (label) label.textContent = 'Auto';
+      }
+    }
+
     function renderTable() {
       const tbody = document.getElementById('invoices-tbody');
+      const cardsWrapper = document.getElementById('view-cards-wrapper');
       const emptyState = document.getElementById('empty-state');
       const exportBtn = document.getElementById('btn-export-excel');
 
       tbody.innerHTML = '';
+      if (cardsWrapper) cardsWrapper.innerHTML = '';
 
       const filtered = appState.invoices.filter(inv => {
         if (appState.currentFilter === 'ALL') return true;
@@ -2000,12 +2295,11 @@ Los importes monetarios deben ser números decimales puros (sin símbolos de mon
       }
 
       filtered.forEach((inv) => {
-        const tr = document.createElement('tr');
-        tr.id = `row-${inv.id}`;
-
-        // Badge de estado
         const badgeConfig = getStatusBadgeConfig(inv.estado, inv.auditMensaje);
 
+        // 1. FILA DE TABLA (ESCRITORIO)
+        const tr = document.createElement('tr');
+        tr.id = `row-${inv.id}`;
         tr.innerHTML = `
           <td>
             <span class="status-badge ${badgeConfig.className}" data-tooltip="${escapeHtml(inv.auditMensaje || '')}">
@@ -2078,8 +2372,96 @@ Los importes monetarios deben ser números decimales puros (sin símbolos de mon
             </button>
           </td>
         `;
-
         tbody.appendChild(tr);
+
+        // 2. TARJETA RESPONSIVA (MÓVIL / TABLET SIN NINGÚN SCROLL HORIZONTAL)
+        if (cardsWrapper) {
+          const card = document.createElement('div');
+          card.className = 'invoice-card';
+          card.id = `card-${inv.id}`;
+          card.innerHTML = `
+            <div class="invoice-card-header">
+              <span class="status-badge ${badgeConfig.className}" data-tooltip="${escapeHtml(inv.auditMensaje || '')}">
+                ${badgeConfig.icon}
+                ${badgeConfig.text}
+              </span>
+              <div style="display:flex; align-items:center; gap:8px;">
+                ${inv.fileUrl ? `
+                  <button class="doc-preview-btn" onclick="openViewer('${inv.id}')" title="Ver documento original: ${escapeHtml(inv.fileName || '')}">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                    <span>${escapeHtml(inv.fileName || 'Doc')}</span>
+                  </button>
+                ` : `<span style="color: var(--text-muted); font-size: 0.75rem;">Manual</span>`}
+                <button class="btn btn-ghost" onclick="deleteInvoice('${inv.id}')" title="Eliminar fila" style="padding: 4px 6px; color: var(--text-muted);">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+              </div>
+            </div>
+            <div class="invoice-card-body">
+              <div class="card-field card-field-full">
+                <span class="card-field-label">Proveedor</span>
+                <span class="editable-cell card-field-value" contenteditable="true" spellcheck="false"
+                      onblur="updateInvoiceField('${inv.id}', 'proveedor', this.innerText)">
+                  ${escapeHtml(inv.proveedor || '')}
+                </span>
+              </div>
+              <div class="card-field">
+                <span class="card-field-label">NIF / CIF</span>
+                <span class="editable-cell card-field-value" contenteditable="true" spellcheck="false"
+                      style="font-family: 'JetBrains Mono', monospace;"
+                      onblur="updateInvoiceField('${inv.id}', 'nif', this.innerText)">
+                  ${escapeHtml(inv.nif || '')}
+                </span>
+              </div>
+              <div class="card-field">
+                <span class="card-field-label">Fecha</span>
+                <span class="editable-cell card-field-value" contenteditable="true" spellcheck="false"
+                      style="font-family: 'JetBrains Mono', monospace;"
+                      onblur="updateInvoiceField('${inv.id}', 'fecha', this.innerText)">
+                  ${escapeHtml(inv.fecha || '')}
+                </span>
+              </div>
+              <div class="card-field">
+                <span class="card-field-label">Número</span>
+                <span class="editable-cell card-field-value" contenteditable="true" spellcheck="false"
+                      style="font-family: 'JetBrains Mono', monospace;"
+                      onblur="updateInvoiceField('${inv.id}', 'numero', this.innerText)">
+                  ${escapeHtml(inv.numero || '')}
+                </span>
+              </div>
+              <div class="card-field">
+                <span class="card-field-label">Base Imponible</span>
+                <span class="editable-cell card-field-value" contenteditable="true" spellcheck="false"
+                      onblur="updateInvoiceField('${inv.id}', 'base', this.innerText)">
+                  ${formatMoney(inv.base)} €
+                </span>
+              </div>
+              <div class="card-field">
+                <span class="card-field-label">IVA (€)</span>
+                <span class="editable-cell card-field-value" contenteditable="true" spellcheck="false"
+                      onblur="updateInvoiceField('${inv.id}', 'iva', this.innerText)">
+                  ${formatMoney(inv.iva)} €
+                </span>
+              </div>
+              <div class="card-field">
+                <span class="card-field-label">IRPF (€)</span>
+                <span class="editable-cell card-field-value" contenteditable="true" spellcheck="false"
+                      onblur="updateInvoiceField('${inv.id}', 'irpf', this.innerText)">
+                  ${formatMoney(inv.irpf)} €
+                </span>
+              </div>
+              <div class="card-field highlight">
+                <span class="card-field-label">Total Facturado</span>
+                <span class="editable-cell card-field-value" contenteditable="true" spellcheck="false"
+                      style="font-weight: 700; color: #60a5fa;"
+                      onblur="updateInvoiceField('${inv.id}', 'total', this.innerText)">
+                  ${formatMoney(inv.total)} €
+                </span>
+              </div>
+            </div>
+          `;
+          cardsWrapper.appendChild(card);
+        }
       });
 
       updateFilterCounts();
@@ -2295,7 +2677,7 @@ Los importes monetarios deben ser números decimales puros (sin símbolos de mon
       }
 
       const fechaHoy = new Date().toISOString().split('T')[0];
-      const fileName = `Quadra_Facturas_${fechaHoy}.xlsx`;
+      const fileName = `4dra_Facturas_${fechaHoy}.xlsx`;
 
       try {
         // --------------------------------------------------------------------
@@ -2303,7 +2685,7 @@ Los importes monetarios deben ser números decimales puros (sin símbolos de mon
         // --------------------------------------------------------------------
         if (window.ExcelJS) {
           const wb = new ExcelJS.Workbook();
-          wb.creator = 'Quadra AI';
+          wb.creator = '4dra AI';
           wb.created = new Date();
           wb.properties.date1904 = false;
 
