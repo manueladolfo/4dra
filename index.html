@@ -766,6 +766,62 @@
       color: var(--status-duplicada-text);
     }
 
+    /* Selector interactivo de Naturaleza Fiscal: P (Proveedor / Soportado) o C (Cliente / Repercutido) */
+    .tipo-selector {
+      display: inline-flex;
+      align-items: center;
+      background: var(--bg-surface-alt);
+      border: 1px solid var(--border-subtle);
+      border-radius: 6px;
+      padding: 2px;
+      gap: 2px;
+      user-select: none;
+    }
+    .tipo-btn {
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      line-height: 1.2;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .tipo-btn:hover {
+      color: var(--text-primary);
+      background: rgba(255, 255, 255, 0.08);
+    }
+    .tipo-btn.active.tipo-p {
+      background: rgba(59, 130, 246, 0.22);
+      color: #60a5fa;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    }
+    .tipo-btn.active.tipo-c {
+      background: rgba(16, 185, 129, 0.22);
+      color: #34d399;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    }
+    [data-theme="light"] .tipo-selector {
+      background: #f1f5f9;
+      border-color: #cbd5e1;
+    }
+    [data-theme="light"] .tipo-btn.active.tipo-p {
+      background: #dbeafe;
+      color: #1d4ed8;
+      box-shadow: 0 1px 2px rgba(29, 78, 216, 0.15);
+    }
+    [data-theme="light"] .tipo-btn.active.tipo-c {
+      background: #d1fae5;
+      color: #047857;
+      box-shadow: 0 1px 2px rgba(4, 120, 87, 0.15);
+    }
+
     /* Miniatura / Botón ver archivo */
     .doc-preview-btn {
       display: inline-flex;
@@ -1539,7 +1595,7 @@
             <tr>
               <th style="min-width: 125px;">Estado</th>
               <th style="min-width: 125px;">Doc. Original</th>
-              <th style="min-width: 200px;">Proveedor</th>
+              <th style="min-width: 200px;">Proveedor / Cliente</th>
               <th style="min-width: 110px;">NIF / CIF</th>
               <th style="min-width: 105px;">Fecha</th>
               <th style="min-width: 115px;">Número</th>
@@ -1547,6 +1603,7 @@
               <th class="num" style="min-width: 95px;">IVA (€)</th>
               <th class="num" style="min-width: 95px;">IRPF (€)</th>
               <th class="num col-total" style="min-width: 125px;">Total (€)</th>
+              <th style="min-width: 80px; text-align: center;" title="Tipo de IVA: (P) Proveedor / Soportado o (C) Cliente / Repercutido">Tipo (P/C)</th>
               <th class="col-actions" style="width: 48px; text-align: center;">✕</th>
             </tr>
           </thead>
@@ -2343,6 +2400,7 @@
             iva: Number(extractedData.iva) || 0,
             irpf: Number(extractedData.irpf) || 0,
             total: Number(extractedData.total) || 0,
+            tipo: (extractedData.tipo === 'C') ? 'C' : 'P',
             tipoIvaPct: extractedData.tipo_iva_pct || 21,
             desgloseLineas: extractedData.lineas || []
           };
@@ -2409,6 +2467,7 @@ REGLAS OBLIGATORIAS DE EXTRACCIÓN:
 6. "tipo_iva_pct": Tipo de IVA aplicado (ej: 21, 10, 4, etc.).
 7. "irpf": Si la factura incluye RETENCIÓN o IRPF (muy habitual en alquileres con 19% o profesionales con 15%), extrae el importe positivo en euros (ej: si indica "RETENCION 19 % -204,13 €", pon irpf: 204.13). Si no hay retención, pon 0.
 8. "total": Importe final a pagar / LÍQUIDO A PAGAR (tras sumar IVA y restar retención). Si figura "LÍQUIDO A PAGAR" o "TOTAL FACTURA", ese es el total exacto.
+9. "tipo": Clasifica la factura: si es un gasto/compra recibido de un proveedor, indica "P". Si es un ingreso/venta emitido por nosotros a un cliente, indica "C". En caso de duda o por defecto, usa "P".
 
 Devuelve ÚNICAMENTE un objeto JSON puro (sin formato markdown):
 {
@@ -2419,6 +2478,7 @@ Devuelve ÚNICAMENTE un objeto JSON puro (sin formato markdown):
   "base": 1074.38,
   "iva": 225.62,
   "tipo_iva_pct": 21,
+  "tipo": "P",
   "irpf": 204.13,
   "total": 1095.90
 }
@@ -2657,6 +2717,14 @@ Los importes monetarios deben ser números decimales puros (sin símbolos €). 
               ${formatMoney(inv.total)} €
             </span>
           </td>
+          <td style="text-align: center;">
+            <div class="tipo-selector" title="Tipo: ${inv.tipo === 'C' ? 'Cliente (IVA Repercutido)' : 'Proveedor (IVA Soportado)'}">
+              <button type="button" class="tipo-btn ${inv.tipo === 'P' || !inv.tipo ? 'active tipo-p' : ''}" 
+                      onclick="setInvoiceTipo('${inv.id}', 'P')" title="Proveedor / Gasto (IVA Soportado)">P</button>
+              <button type="button" class="tipo-btn ${inv.tipo === 'C' ? 'active tipo-c' : ''}" 
+                      onclick="setInvoiceTipo('${inv.id}', 'C')" title="Cliente / Venta (IVA Repercutido)">C</button>
+            </div>
+          </td>
           <td class="col-actions">
             <button class="btn btn-ghost" onclick="deleteInvoice('${inv.id}')" title="Eliminar fila" style="padding: 4px 6px; color: var(--text-muted);">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
@@ -2690,7 +2758,7 @@ Los importes monetarios deben ser números decimales puros (sin símbolos €). 
             </div>
             <div class="invoice-card-body">
               <div class="card-field card-field-full">
-                <span class="card-field-label">Proveedor</span>
+                <span class="card-field-label">Proveedor / Cliente</span>
                 <span class="editable-cell card-field-value" contenteditable="true" spellcheck="false"
                       onblur="updateInvoiceField('${inv.id}', 'proveedor', this.innerText)">
                   ${escapeHtml(inv.proveedor || '')}
@@ -2749,6 +2817,20 @@ Los importes monetarios deben ser números decimales puros (sin símbolos €). 
                   ${formatMoney(inv.total)} €
                 </span>
               </div>
+              <div class="card-field" style="grid-column: 1 / -1; display: flex; align-items: center; justify-content: space-between; background: var(--bg-surface-alt); padding: 8px 12px; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle);">
+                <div>
+                  <span class="card-field-label" style="margin-bottom: 2px;">Naturaleza de Factura</span>
+                  <div style="font-size: 0.74rem; font-weight: 600; color: ${inv.tipo === 'C' ? '#34d399' : '#60a5fa'};">
+                    ${inv.tipo === 'C' ? 'C · Factura Cliente (IVA Repercutido)' : 'P · Factura Proveedor (IVA Soportado)'}
+                  </div>
+                </div>
+                <div class="tipo-selector" title="Tipo: ${inv.tipo === 'C' ? 'Cliente (IVA Repercutido)' : 'Proveedor (IVA Soportado)'}">
+                  <button type="button" class="tipo-btn ${inv.tipo === 'P' || !inv.tipo ? 'active tipo-p' : ''}" 
+                          onclick="setInvoiceTipo('${inv.id}', 'P')" title="Proveedor (IVA Soportado)">P (Proveedor)</button>
+                  <button type="button" class="tipo-btn ${inv.tipo === 'C' ? 'active tipo-c' : ''}" 
+                          onclick="setInvoiceTipo('${inv.id}', 'C')" title="Cliente (IVA Repercutido)">C (Cliente)</button>
+                </div>
+              </div>
             </div>
           `;
           cardsWrapper.appendChild(card);
@@ -2756,6 +2838,15 @@ Los importes monetarios deben ser números decimales puros (sin símbolos €). 
       });
 
       updateFilterCounts();
+    }
+
+    function setInvoiceTipo(id, tipo) {
+      const inv = appState.invoices.find(i => i.id === id);
+      if (!inv) return;
+      inv.tipo = (tipo === 'C') ? 'C' : 'P';
+      reevaluarAuditoria();
+      const desc = inv.tipo === 'C' ? 'Cliente (IVA Repercutido)' : 'Proveedor (IVA Soportado)';
+      showToast(`Factura asignada a ${desc}`, 'info');
     }
 
     function getStatusBadgeConfig(estado, mensaje) {
@@ -2827,6 +2918,7 @@ Los importes monetarios deben ser números decimales puros (sin símbolos €). 
         iva: 21.00,
         irpf: 0.00,
         total: 121.00,
+        tipo: 'P',
         tipoIvaPct: 21
       };
       appState.invoices.unshift(newInv);
@@ -2886,22 +2978,50 @@ Los importes monetarios deben ser números decimales puros (sin símbolos €). 
       let sumTotal = 0;
       let countCuadra = 0;
       let countAvisos = 0;
+      let ivaRepercutido = 0; // Clientes (C)
+      let ivaSoportado = 0;   // Proveedores (P)
 
       appState.invoices.forEach(i => {
-        sumBase += (Number(i.base) || 0);
-        sumIva += (Number(i.iva) || 0);
-        sumIrpf += (Number(i.irpf) || 0);
-        sumTotal += (Number(i.total) || 0);
+        const b = (Number(i.base) || 0);
+        const v = (Number(i.iva) || 0);
+        const r = (Number(i.irpf) || 0);
+        const t = (Number(i.total) || 0);
+
+        sumBase += b;
+        sumIva += v;
+        sumIrpf += r;
+        sumTotal += t;
+
+        if (i.tipo === 'C') {
+          ivaRepercutido += v;
+        } else {
+          ivaSoportado += v;
+        }
 
         if (i.estado === 'CUADRA') countCuadra++;
         else countAvisos++;
       });
+
+      const liquidacionIva = ivaRepercutido - ivaSoportado;
 
       document.getElementById('kpi-total-docs').textContent = appState.invoices.length;
       document.getElementById('kpi-status-breakdown').textContent = `${countCuadra} correctas · ${countAvisos} con incidencias`;
       
       document.getElementById('kpi-total-base').textContent = formatMoney(sumBase) + ' €';
       document.getElementById('kpi-total-iva').textContent = formatMoney(sumIva) + ' €';
+      
+      const kpiIvaDetail = document.getElementById('kpi-iva-detail');
+      if (kpiIvaDetail) {
+        if (ivaRepercutido > 0 || ivaSoportado > 0) {
+          const resultadoLiq = liquidacionIva >= 0 
+            ? `<span style="color:#fbbf24; font-weight:700;">A pagar: +${formatMoney(liquidacionIva)} €</span>` 
+            : `<span style="color:#34d399; font-weight:700;">A devolver: ${formatMoney(liquidacionIva)} €</span>`;
+          kpiIvaDetail.innerHTML = `Rep (C): ${formatMoney(ivaRepercutido)} € · Sop (P): ${formatMoney(ivaSoportado)} € · ${resultadoLiq}`;
+        } else {
+          kpiIvaDetail.textContent = 'Desglosado en Excel';
+        }
+      }
+
       document.getElementById('kpi-total-importe').textContent = formatMoney(sumTotal) + ' €';
       document.getElementById('kpi-irpf-total').textContent = `IRPF retenido: ${formatMoney(sumIrpf)} €`;
 
@@ -3002,7 +3122,13 @@ Los importes monetarios deben ser números decimales puros (sin símbolos €). 
             noCuadraBg: 'FFFEE2E2',   // #FEE2E2 Rojo pastel
             noCuadraText: 'FF991B1B', // #991B1B
             duplicadaBg: 'FFF3E8FF',  // #F3E8FF Púrpura pastel
-            duplicadaText: 'FF6B21A8' // #6B21A8
+            duplicadaText: 'FF6B21A8', // #6B21A8
+
+            // Distintivos P (Proveedor) / C (Cliente)
+            clienteBg: 'FFD1FAE5',    // #D1FAE5 Verde menta
+            clienteText: 'FF047857',  // #047857 Verde esmeralda
+            proveedorBg: 'FFDBEAFE',  // #DBEAFE Azul pastel
+            proveedorText: 'FF1D4ED8' // #1D4ED8 Azul vivo
           };
 
           const borderThin = {
@@ -3029,7 +3155,8 @@ Los importes monetarios deben ser números decimales puros (sin símbolos €). 
           // ===================================================================
           const ws1 = wb.addWorksheet('Facturas', { views: [{ showGridLines: true }] });
           ws1.columns = [
-            { key: 'estado', width: 17 },
+            { key: 'estado', width: 16 },
+            { key: 'tipo', width: 15 },
             { key: 'proveedor', width: 34 },
             { key: 'nif', width: 16 },
             { key: 'fecha', width: 14 },
@@ -3043,7 +3170,7 @@ Los importes monetarios deben ser números decimales puros (sin símbolos €). 
           ];
 
           // Fila 1: Banner superior
-          ws1.mergeCells('A1:K1');
+          ws1.mergeCells('A1:L1');
           const t1 = ws1.getCell('A1');
           t1.value = '4DRA AI  ·  REGISTRO Y AUDITORÍA FISCAL DE FACTURAS';
           t1.font = { name: 'Calibri', size: 14, bold: true, color: { argb: C.white } };
@@ -3052,7 +3179,7 @@ Los importes monetarios deben ser números decimales puros (sin símbolos €). 
           ws1.getRow(1).height = 36;
 
           // Fila 2: Subtítulo
-          ws1.mergeCells('A2:K2');
+          ws1.mergeCells('A2:L2');
           const sub1 = ws1.getCell('A2');
           sub1.value = `Exportación generada el ${nowFormatted}  |  Documentos procesados: ${totalDocs}  |  Conformidad: ${pctCuadra}%`;
           sub1.font = { name: 'Calibri', size: 9.5, italic: true, color: { argb: 'FFCBD5E1' } };
@@ -3063,10 +3190,10 @@ Los importes monetarios deben ser números decimales puros (sin símbolos €). 
           // Fila 3: Espaciador
           ws1.getRow(3).height = 8;
 
-          // Fila 4: Leyenda explicativa de estados
-          ws1.mergeCells('A4:K4');
+          // Fila 4: Leyenda explicativa de estados y tipo P / C
+          ws1.mergeCells('A4:L4');
           const leg1 = ws1.getCell('A4');
-          leg1.value = 'LEYENDA:   🟢 CUADRA (Suma y NIF conformes)   |   🟡 REVISAR (NIF o fecha a revisar)   |   🔴 NO CUADRA (Descuadre aritmético)   |   🟣 DUPLICADA (Factura repetida)';
+          leg1.value = 'ESTADOS: 🟢 CUADRA   |   🟡 REVISAR   |   🔴 NO CUADRA   |   🟣 DUPLICADA   ||   TIPO: [P] Proveedor (IVA Soportado)   |   [C] Cliente (IVA Repercutido)';
           leg1.font = { name: 'Calibri', size: 9, bold: true, color: { argb: C.navySlate } };
           leg1.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF1F5F9' } };
           leg1.alignment = { vertical: 'middle', horizontal: 'center' };
@@ -3081,7 +3208,7 @@ Los importes monetarios deben ser números decimales puros (sin símbolos €). 
 
           // Fila 6: Encabezados de tabla
           const headers1 = [
-            'Estado', 'Proveedor / Emisor', 'NIF / CIF', 'Fecha', 'Nº Factura',
+            'Estado', 'Tipo (P/C)', 'Proveedor / Cliente', 'NIF / CIF', 'Fecha', 'Nº Factura',
             'Base Imponible', 'Cuota IVA', 'Retención IRPF', 'Total Factura',
             'Archivo Origen', 'Incidencias de Auditoría'
           ];
@@ -3094,7 +3221,7 @@ Los importes monetarios deben ser números decimales puros (sin símbolos €). 
             cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C.navySlate } };
             cell.alignment = {
               vertical: 'middle',
-              horizontal: (i >= 5 && i <= 8) ? 'right' : (i === 0 || i === 2 || i === 3 ? 'center' : 'left')
+              horizontal: (i >= 6 && i <= 9) ? 'right' : (i === 0 || i === 1 || i === 3 || i === 4 ? 'center' : 'left')
             };
             cell.border = {
               top: { style: 'medium', color: { argb: C.navyDark } },
@@ -3113,7 +3240,7 @@ Los importes monetarios deben ser números decimales puros (sin símbolos €). 
             const isZebra = (idx % 2 === 1);
             const defaultBg = isZebra ? C.bgZebra : C.white;
 
-            // Estado Badge
+            // 1. Estado Badge
             const cEstado = row.getCell(1);
             let estadoText = inv.estado || 'REVISAR';
             let estadoBg = C.revisarBg;
@@ -3143,40 +3270,49 @@ Los importes monetarios deben ser números decimales puros (sin símbolos €). 
             cEstado.alignment = { vertical: 'middle', horizontal: 'center' };
             cEstado.border = borderThin;
 
-            // Proveedor
-            const cProv = row.getCell(2);
+            // 2. Tipo Badge (P / C)
+            const cTipo = row.getCell(2);
+            const isCliente = (inv.tipo === 'C');
+            cTipo.value = isCliente ? 'C · Cliente' : 'P · Proveedor';
+            cTipo.font = { name: 'Calibri', size: 9.5, bold: true, color: { argb: isCliente ? C.clienteText : C.proveedorText } };
+            cTipo.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: isCliente ? C.clienteBg : C.proveedorBg } };
+            cTipo.alignment = { vertical: 'middle', horizontal: 'center' };
+            cTipo.border = borderThin;
+
+            // 3. Proveedor / Cliente
+            const cProv = row.getCell(3);
             cProv.value = inv.proveedor || '';
             cProv.font = { name: 'Calibri', size: 10, bold: true, color: { argb: C.navyDark } };
             cProv.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: defaultBg } };
             cProv.alignment = { vertical: 'middle', horizontal: 'left' };
             cProv.border = borderThin;
 
-            // NIF
-            const cNif = row.getCell(3);
+            // 4. NIF
+            const cNif = row.getCell(4);
             cNif.value = inv.nif || '';
             cNif.font = { name: 'Consolas', size: 9.5, color: { argb: C.navyLight } };
             cNif.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: defaultBg } };
             cNif.alignment = { vertical: 'middle', horizontal: 'center' };
             cNif.border = borderThin;
 
-            // Fecha
-            const cFecha = row.getCell(4);
+            // 5. Fecha
+            const cFecha = row.getCell(5);
             cFecha.value = inv.fecha || '';
             cFecha.font = { name: 'Calibri', size: 10, color: { argb: C.navyLight } };
             cFecha.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: defaultBg } };
             cFecha.alignment = { vertical: 'middle', horizontal: 'center' };
             cFecha.border = borderThin;
 
-            // Número Factura
-            const cNum = row.getCell(5);
+            // 6. Número Factura
+            const cNum = row.getCell(6);
             cNum.value = inv.numero || '';
             cNum.font = { name: 'Consolas', size: 9.5, color: { argb: C.navyLight } };
             cNum.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: defaultBg } };
             cNum.alignment = { vertical: 'middle', horizontal: 'left' };
             cNum.border = borderThin;
 
-            // Base (€)
-            const cBase = row.getCell(6);
+            // 7. Base (€)
+            const cBase = row.getCell(7);
             cBase.value = Number(inv.base) || 0;
             cBase.numFmt = '#,##0.00 "€"';
             cBase.font = { name: 'Calibri', size: 10, color: { argb: C.navyLight } };
@@ -3184,8 +3320,8 @@ Los importes monetarios deben ser números decimales puros (sin símbolos €). 
             cBase.alignment = { vertical: 'middle', horizontal: 'right' };
             cBase.border = borderThin;
 
-            // IVA (€)
-            const cIva = row.getCell(7);
+            // 8. IVA (€)
+            const cIva = row.getCell(8);
             cIva.value = Number(inv.iva) || 0;
             cIva.numFmt = '#,##0.00 "€"';
             cIva.font = { name: 'Calibri', size: 10, color: { argb: C.navyLight } };
@@ -3193,8 +3329,8 @@ Los importes monetarios deben ser números decimales puros (sin símbolos €). 
             cIva.alignment = { vertical: 'middle', horizontal: 'right' };
             cIva.border = borderThin;
 
-            // IRPF (€)
-            const cIrpf = row.getCell(8);
+            // 9. IRPF (€)
+            const cIrpf = row.getCell(9);
             cIrpf.value = Number(inv.irpf) || 0;
             cIrpf.numFmt = '#,##0.00 "€"';
             cIrpf.font = { name: 'Calibri', size: 10, color: { argb: C.navyLight } };
@@ -3202,8 +3338,8 @@ Los importes monetarios deben ser números decimales puros (sin símbolos €). 
             cIrpf.alignment = { vertical: 'middle', horizontal: 'right' };
             cIrpf.border = borderThin;
 
-            // Total Factura (€)
-            const cTot = row.getCell(9);
+            // 10. Total Factura (€)
+            const cTot = row.getCell(10);
             cTot.value = Number(inv.total) || 0;
             cTot.numFmt = '#,##0.00 "€"';
             cTot.font = { name: 'Calibri', size: 10.5, bold: true, color: { argb: C.navyDark } };
@@ -3211,16 +3347,16 @@ Los importes monetarios deben ser números decimales puros (sin símbolos €). 
             cTot.alignment = { vertical: 'middle', horizontal: 'right' };
             cTot.border = borderThin;
 
-            // Archivo Origen
-            const cArch = row.getCell(10);
+            // 11. Archivo Origen
+            const cArch = row.getCell(11);
             cArch.value = inv.fileName || 'Manual';
             cArch.font = { name: 'Calibri', size: 9, color: { argb: C.slateText } };
             cArch.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: defaultBg } };
             cArch.alignment = { vertical: 'middle', horizontal: 'left' };
             cArch.border = borderThin;
 
-            // Incidencias
-            const cInc = row.getCell(11);
+            // 12. Incidencias
+            const cInc = row.getCell(12);
             const incText = inv.incidencias && inv.incidencias.length > 0 ? inv.incidencias.join('; ') : '✓ Sin incidencias';
             cInc.value = incText;
             cInc.font = {
@@ -3239,73 +3375,73 @@ Los importes monetarios deben ser números decimales puros (sin símbolos €). 
           const totRow1 = ws1.getRow(totRow1Idx);
           totRow1.height = 26;
 
-          ws1.mergeCells(`A${totRow1Idx}:E${totRow1Idx}`);
+          ws1.mergeCells(`A${totRow1Idx}:F${totRow1Idx}`);
           const totLabel1 = ws1.getCell(`A${totRow1Idx}`);
           totLabel1.value = 'TOTALES ACUMULADOS';
           totLabel1.font = { name: 'Calibri', size: 11, bold: true, color: { argb: C.navyDark } };
           totLabel1.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C.bgTotal } };
           totLabel1.alignment = { vertical: 'middle', horizontal: 'right' };
           
-          for (let c = 1; c <= 5; c++) {
+          for (let c = 1; c <= 6; c++) {
             ws1.getCell(totRow1Idx, c).border = borderTotal;
             ws1.getCell(totRow1Idx, c).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C.bgTotal } };
           }
 
-          const totBase1 = totRow1.getCell(6);
-          totBase1.value = { formula: `SUM(F${startRow1}:F${lastRow1Idx})` };
+          const totBase1 = totRow1.getCell(7);
+          totBase1.value = { formula: `SUM(G${startRow1}:G${lastRow1Idx})` };
           totBase1.numFmt = '#,##0.00 "€"';
           totBase1.font = { name: 'Calibri', size: 11, bold: true, color: { argb: C.navyDark } };
           totBase1.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C.bgTotal } };
           totBase1.alignment = { vertical: 'middle', horizontal: 'right' };
           totBase1.border = borderTotal;
 
-          const totIva1 = totRow1.getCell(7);
-          totIva1.value = { formula: `SUM(G${startRow1}:G${lastRow1Idx})` };
+          const totIva1 = totRow1.getCell(8);
+          totIva1.value = { formula: `SUM(H${startRow1}:H${lastRow1Idx})` };
           totIva1.numFmt = '#,##0.00 "€"';
           totIva1.font = { name: 'Calibri', size: 11, bold: true, color: { argb: C.navyDark } };
           totIva1.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C.bgTotal } };
           totIva1.alignment = { vertical: 'middle', horizontal: 'right' };
           totIva1.border = borderTotal;
 
-          const totIrpf1 = totRow1.getCell(8);
-          totIrpf1.value = { formula: `SUM(H${startRow1}:H${lastRow1Idx})` };
+          const totIrpf1 = totRow1.getCell(9);
+          totIrpf1.value = { formula: `SUM(I${startRow1}:I${lastRow1Idx})` };
           totIrpf1.numFmt = '#,##0.00 "€"';
           totIrpf1.font = { name: 'Calibri', size: 11, bold: true, color: { argb: C.navyDark } };
           totIrpf1.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C.bgTotal } };
           totIrpf1.alignment = { vertical: 'middle', horizontal: 'right' };
           totIrpf1.border = borderTotal;
 
-          const totFinal1 = totRow1.getCell(9);
-          totFinal1.value = { formula: `SUM(I${startRow1}:I${lastRow1Idx})` };
+          const totFinal1 = totRow1.getCell(10);
+          totFinal1.value = { formula: `SUM(J${startRow1}:J${lastRow1Idx})` };
           totFinal1.numFmt = '#,##0.00 "€"';
           totFinal1.font = { name: 'Calibri', size: 11.5, bold: true, color: { argb: C.indigoText } };
           totFinal1.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C.indigoBg } };
           totFinal1.alignment = { vertical: 'middle', horizontal: 'right' };
           totFinal1.border = borderTotal;
 
-          for (let c = 10; c <= 11; c++) {
+          for (let c = 11; c <= 12; c++) {
             const cell = ws1.getCell(totRow1Idx, c);
             cell.border = borderTotal;
             cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C.bgTotal } };
           }
 
-          ws1.autoFilter = { from: 'A6', to: `K${lastRow1Idx}` };
+          ws1.autoFilter = { from: 'A6', to: `L${lastRow1Idx}` };
 
           // ===================================================================
-          // HOJA 2: DESGLOSE IVA
+          // HOJA 2: DESGLOSE IVA Y LIQUIDACIÓN TRIBUTARIA (MODELO 303)
           // ===================================================================
           const ws2 = wb.addWorksheet('Desglose IVA', { views: [{ showGridLines: true }] });
           ws2.columns = [
-            { key: 'tipo', width: 34 },
-            { key: 'docs', width: 18 },
+            { key: 'tipo', width: 38 },
+            { key: 'docs', width: 16 },
             { key: 'base', width: 25 },
-            { key: 'cuota', width: 22 },
+            { key: 'cuota', width: 24 },
             { key: 'total', width: 25 }
           ];
 
           ws2.mergeCells('A1:E1');
           const t2 = ws2.getCell('A1');
-          t2.value = 'DESGLOSE FISCAL POR TIPOS IMPOSITIVOS DE IVA';
+          t2.value = '4DRA AI  ·  DESGLOSE FISCAL Y LIQUIDACIÓN DE IVA (MODELO 303)';
           t2.font = { name: 'Calibri', size: 13, bold: true, color: { argb: C.white } };
           t2.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C.navyDark } };
           t2.alignment = { vertical: 'middle', horizontal: 'center' };
@@ -3313,89 +3449,103 @@ Los importes monetarios deben ser números decimales puros (sin símbolos €). 
 
           ws2.mergeCells('A2:E2');
           const sub2 = ws2.getCell('A2');
-          sub2.value = 'Liquidación agrupada para declaraciones tributarias (Modelo 303 / 390 / Trimestral)';
+          sub2.value = 'Diferenciación de IVA Repercutido (Clientes [C]) e IVA Soportado (Proveedores [P]) con resultado de liquidación';
           sub2.font = { name: 'Calibri', size: 9.5, italic: true, color: { argb: 'FFCBD5E1' } };
           sub2.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C.navySlate } };
           sub2.alignment = { vertical: 'middle', horizontal: 'center' };
           ws2.getRow(2).height = 20;
           ws2.getRow(3).height = 10;
 
-          const headers2 = ['Tipo Impositivo', 'Nº Documentos', 'Base Imponible Acumulada', 'Cuota IVA Acumulada', 'Total con IVA'];
-          const hRow2 = ws2.getRow(4);
-          hRow2.height = 26;
-          headers2.forEach((h, i) => {
-            const cell = hRow2.getCell(i + 1);
+          // Función para acumular bases y cuotas por tipo impositivo
+          function agruparTiposIva(listaFacturas) {
+            const map = {
+              'IVA General (21%)': { base: 0, cuota: 0, docs: 0 },
+              'IVA Reducido (10%)': { base: 0, cuota: 0, docs: 0 },
+              'IVA Superreducido (4%)': { base: 0, cuota: 0, docs: 0 },
+              'IVA Especial (5%)': { base: 0, cuota: 0, docs: 0 },
+              'Exento / Operación al 0%': { base: 0, cuota: 0, docs: 0 },
+              'Otros tipos / No especificado': { base: 0, cuota: 0, docs: 0 }
+            };
+
+            listaFacturas.forEach(inv => {
+              const base = Number(inv.base) || 0;
+              const iva = Number(inv.iva) || 0;
+
+              if (base === 0 && iva === 0) {
+                map['Exento / Operación al 0%'].docs++;
+                return;
+              }
+
+              const pct = base > 0 ? (iva / base) * 100 : 0;
+              if (Math.abs(pct - 21) < 1.5) {
+                map['IVA General (21%)'].base += base;
+                map['IVA General (21%)'].cuota += iva;
+                map['IVA General (21%)'].docs++;
+              } else if (Math.abs(pct - 10) < 1.5) {
+                map['IVA Reducido (10%)'].base += base;
+                map['IVA Reducido (10%)'].cuota += iva;
+                map['IVA Reducido (10%)'].docs++;
+              } else if (Math.abs(pct - 4) < 1.0) {
+                map['IVA Superreducido (4%)'].base += base;
+                map['IVA Superreducido (4%)'].cuota += iva;
+                map['IVA Superreducido (4%)'].docs++;
+              } else if (Math.abs(pct - 5) < 1.0) {
+                map['IVA Especial (5%)'].base += base;
+                map['IVA Especial (5%)'].cuota += iva;
+                map['IVA Especial (5%)'].docs++;
+              } else if (iva === 0) {
+                map['Exento / Operación al 0%'].base += base;
+                map['Exento / Operación al 0%'].cuota += 0;
+                map['Exento / Operación al 0%'].docs++;
+              } else {
+                map['Otros tipos / No especificado'].base += base;
+                map['Otros tipos / No especificado'].cuota += iva;
+                map['Otros tipos / No especificado'].docs++;
+              }
+            });
+            return map;
+          }
+
+          const facturasClientes = appState.invoices.filter(i => i.tipo === 'C');
+          const facturasProveedores = appState.invoices.filter(i => i.tipo !== 'C');
+
+          const desgloseClientes = agruparTiposIva(facturasClientes);
+          const desgloseProveedores = agruparTiposIva(facturasProveedores);
+
+          let currentRow2 = 4;
+
+          // -------------------------------------------------------------------
+          // BLOQUE 1: IVA REPERCUTIDO (FACTURAS DE CLIENTES - VENTAS [C])
+          // -------------------------------------------------------------------
+          ws2.mergeCells(`A${currentRow2}:E${currentRow2}`);
+          const secTitleCli = ws2.getCell(`A${currentRow2}`);
+          secTitleCli.value = '1. FACTURAS EMITIDAS A CLIENTES (C)  ·  IVA REPERCUTIDO (INGRESOS)';
+          secTitleCli.font = { name: 'Calibri', size: 10.5, bold: true, color: { argb: C.white } };
+          secTitleCli.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF065F46' } }; // Verde bosque oscuro
+          secTitleCli.alignment = { vertical: 'middle', horizontal: 'left' };
+          ws2.getRow(currentRow2).height = 24;
+          currentRow2++;
+
+          const headersCli = ['Tipo Impositivo (Ventas / Clientes)', 'Nº Documentos', 'Base Imponible Acumulada', 'Cuota IVA Repercutido', 'Total con IVA'];
+          const hRowCli = ws2.getRow(currentRow2);
+          hRowCli.height = 24;
+          headersCli.forEach((h, i) => {
+            const cell = hRowCli.getCell(i + 1);
             cell.value = h;
-            cell.font = { name: 'Calibri', size: 10.5, bold: true, color: { argb: C.white } };
-            cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C.navySlate } };
-            cell.alignment = {
-              vertical: 'middle',
-              horizontal: i === 0 ? 'left' : (i === 1 ? 'center' : 'right')
-            };
-            cell.border = {
-              top: { style: 'medium', color: { argb: C.navyDark } },
-              bottom: { style: 'medium', color: { argb: C.navyDark } },
-              left: { style: 'thin', color: { argb: 'FF475569' } },
-              right: { style: 'thin', color: { argb: 'FF475569' } }
-            };
+            cell.font = { name: 'Calibri', size: 10, bold: true, color: { argb: C.white } };
+            cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF047857' } };
+            cell.alignment = { vertical: 'middle', horizontal: i === 0 ? 'left' : (i === 1 ? 'center' : 'right') };
+            cell.border = borderThin;
           });
+          currentRow2++;
 
-          const desgloseMap = {
-            'IVA General (21%)': { base: 0, cuota: 0, docs: 0 },
-            'IVA Reducido (10%)': { base: 0, cuota: 0, docs: 0 },
-            'IVA Superreducido (4%)': { base: 0, cuota: 0, docs: 0 },
-            'IVA Especial (5%)': { base: 0, cuota: 0, docs: 0 },
-            'Exento / Operación al 0%': { base: 0, cuota: 0, docs: 0 },
-            'Otros tipos / No especificado': { base: 0, cuota: 0, docs: 0 }
-          };
-
-          let totalIrpfAcumulado = 0;
-          appState.invoices.forEach(inv => {
-            const base = Number(inv.base) || 0;
-            const iva = Number(inv.iva) || 0;
-            const irpf = Number(inv.irpf) || 0;
-            totalIrpfAcumulado += irpf;
-
-            if (base === 0 && iva === 0) {
-              desgloseMap['Exento / Operación al 0%'].docs++;
-              return;
-            }
-
-            const pct = base > 0 ? (iva / base) * 100 : 0;
-            if (Math.abs(pct - 21) < 1.5) {
-              desgloseMap['IVA General (21%)'].base += base;
-              desgloseMap['IVA General (21%)'].cuota += iva;
-              desgloseMap['IVA General (21%)'].docs++;
-            } else if (Math.abs(pct - 10) < 1.5) {
-              desgloseMap['IVA Reducido (10%)'].base += base;
-              desgloseMap['IVA Reducido (10%)'].cuota += iva;
-              desgloseMap['IVA Reducido (10%)'].docs++;
-            } else if (Math.abs(pct - 4) < 1.0) {
-              desgloseMap['IVA Superreducido (4%)'].base += base;
-              desgloseMap['IVA Superreducido (4%)'].cuota += iva;
-              desgloseMap['IVA Superreducido (4%)'].docs++;
-            } else if (Math.abs(pct - 5) < 1.0) {
-              desgloseMap['IVA Especial (5%)'].base += base;
-              desgloseMap['IVA Especial (5%)'].cuota += iva;
-              desgloseMap['IVA Especial (5%)'].docs++;
-            } else if (iva === 0) {
-              desgloseMap['Exento / Operación al 0%'].base += base;
-              desgloseMap['Exento / Operación al 0%'].cuota += 0;
-              desgloseMap['Exento / Operación al 0%'].docs++;
-            } else {
-              desgloseMap['Otros tipos / No especificado'].base += base;
-              desgloseMap['Otros tipos / No especificado'].cuota += iva;
-              desgloseMap['Otros tipos / No especificado'].docs++;
-            }
-          });
-
-          let row2Idx = 5;
-          const startRow2 = 5;
-          Object.entries(desgloseMap).forEach(([tipo, datos], idx) => {
+          const startRowCli = currentRow2;
+          let cliCountRows = 0;
+          Object.entries(desgloseClientes).forEach(([tipo, datos], idx) => {
             if (datos.docs > 0 || tipo.includes('21%') || tipo.includes('10%')) {
-              const r = ws2.getRow(row2Idx);
+              const r = ws2.getRow(currentRow2);
               r.height = 22;
-              const isZebra = (idx % 2 === 1);
+              const isZebra = (cliCountRows % 2 === 1);
               const bg = isZebra ? C.bgZebra : C.white;
 
               const cTipo = r.getCell(1);
@@ -3423,86 +3573,340 @@ Los importes monetarios deben ser números decimales puros (sin símbolos €). 
               const cCuota = r.getCell(4);
               cCuota.value = Number(datos.cuota.toFixed(2));
               cCuota.numFmt = '#,##0.00 "€"';
-              cCuota.font = { name: 'Calibri', size: 10, color: { argb: C.navyLight } };
+              cCuota.font = { name: 'Calibri', size: 10, bold: true, color: { argb: 'FF047857' } };
               cCuota.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: bg } };
               cCuota.border = borderThin;
               cCuota.alignment = { vertical: 'middle', horizontal: 'right' };
 
               const cTot = r.getCell(5);
-              cTot.value = { formula: `C${row2Idx}+D${row2Idx}` };
+              cTot.value = { formula: `C${currentRow2}+D${currentRow2}` };
               cTot.numFmt = '#,##0.00 "€"';
-              cTot.font = { name: 'Calibri', size: 10.5, bold: true, color: { argb: C.navyDark } };
+              cTot.font = { name: 'Calibri', size: 10, color: { argb: C.navyDark } };
               cTot.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: isZebra ? 'FFF1F5F9' : 'FFFAFAFA' } };
               cTot.border = borderThin;
               cTot.alignment = { vertical: 'middle', horizontal: 'right' };
 
-              row2Idx++;
+              currentRow2++;
+              cliCountRows++;
             }
           });
 
-          const lastRow2Idx = row2Idx - 1;
-          const totRow2 = ws2.getRow(row2Idx);
-          totRow2.height = 26;
+          const lastRowCli = currentRow2 - 1;
+          const totRowCliIdx = currentRow2;
+          const totRowCli = ws2.getRow(totRowCliIdx);
+          totRowCli.height = 25;
 
-          const cTotLabel2 = totRow2.getCell(1);
-          cTotLabel2.value = 'TOTALES IVA SOPORTADO';
-          cTotLabel2.font = { name: 'Calibri', size: 11, bold: true, color: { argb: C.navyDark } };
-          cTotLabel2.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C.bgTotal } };
-          cTotLabel2.alignment = { vertical: 'middle', horizontal: 'left' };
-          cTotLabel2.border = borderTotal;
+          const cTotLabelCli = totRowCli.getCell(1);
+          cTotLabelCli.value = 'TOTAL IVA REPERCUTIDO (A)';
+          cTotLabelCli.font = { name: 'Calibri', size: 10.5, bold: true, color: { argb: 'FF047857' } };
+          cTotLabelCli.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C.clienteBg } };
+          cTotLabelCli.alignment = { vertical: 'middle', horizontal: 'left' };
+          cTotLabelCli.border = borderTotal;
 
-          const cTotDocs2 = totRow2.getCell(2);
-          cTotDocs2.value = { formula: `SUM(B${startRow2}:B${lastRow2Idx})` };
-          cTotDocs2.font = { name: 'Calibri', size: 11, bold: true, color: { argb: C.navyDark } };
-          cTotDocs2.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C.bgTotal } };
-          cTotDocs2.alignment = { vertical: 'middle', horizontal: 'center' };
-          cTotDocs2.border = borderTotal;
+          const cTotDocsCli = totRowCli.getCell(2);
+          cTotDocsCli.value = { formula: `SUM(B${startRowCli}:B${lastRowCli})` };
+          cTotDocsCli.font = { name: 'Calibri', size: 10.5, bold: true, color: { argb: 'FF047857' } };
+          cTotDocsCli.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C.clienteBg } };
+          cTotDocsCli.alignment = { vertical: 'middle', horizontal: 'center' };
+          cTotDocsCli.border = borderTotal;
 
-          const cTotBase2 = totRow2.getCell(3);
-          cTotBase2.value = { formula: `SUM(C${startRow2}:C${lastRow2Idx})` };
-          cTotBase2.numFmt = '#,##0.00 "€"';
-          cTotBase2.font = { name: 'Calibri', size: 11, bold: true, color: { argb: C.navyDark } };
-          cTotBase2.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C.bgTotal } };
-          cTotBase2.alignment = { vertical: 'middle', horizontal: 'right' };
-          cTotBase2.border = borderTotal;
+          const cTotBaseCli = totRowCli.getCell(3);
+          cTotBaseCli.value = { formula: `SUM(C${startRowCli}:C${lastRowCli})` };
+          cTotBaseCli.numFmt = '#,##0.00 "€"';
+          cTotBaseCli.font = { name: 'Calibri', size: 10.5, bold: true, color: { argb: 'FF047857' } };
+          cTotBaseCli.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C.clienteBg } };
+          cTotBaseCli.alignment = { vertical: 'middle', horizontal: 'right' };
+          cTotBaseCli.border = borderTotal;
 
-          const cTotCuota2 = totRow2.getCell(4);
-          cTotCuota2.value = { formula: `SUM(D${startRow2}:D${lastRow2Idx})` };
-          cTotCuota2.numFmt = '#,##0.00 "€"';
-          cTotCuota2.font = { name: 'Calibri', size: 11, bold: true, color: { argb: C.navyDark } };
-          cTotCuota2.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C.bgTotal } };
-          cTotCuota2.alignment = { vertical: 'middle', horizontal: 'right' };
-          cTotCuota2.border = borderTotal;
+          const cTotCuotaCli = totRowCli.getCell(4);
+          cTotCuotaCli.value = { formula: `SUM(D${startRowCli}:D${lastRowCli})` };
+          cTotCuotaCli.numFmt = '#,##0.00 "€"';
+          cTotCuotaCli.font = { name: 'Calibri', size: 11, bold: true, color: { argb: 'FF047857' } };
+          cTotCuotaCli.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C.clienteBg } };
+          cTotCuotaCli.alignment = { vertical: 'middle', horizontal: 'right' };
+          cTotCuotaCli.border = borderTotal;
 
-          const cTotFinal2 = totRow2.getCell(5);
-          cTotFinal2.value = { formula: `SUM(E${startRow2}:E${lastRow2Idx})` };
-          cTotFinal2.numFmt = '#,##0.00 "€"';
-          cTotFinal2.font = { name: 'Calibri', size: 11.5, bold: true, color: { argb: C.indigoText } };
-          cTotFinal2.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C.indigoBg } };
-          cTotFinal2.alignment = { vertical: 'middle', horizontal: 'right' };
-          cTotFinal2.border = borderTotal;
+          const cTotFinalCli = totRowCli.getCell(5);
+          cTotFinalCli.value = { formula: `SUM(E${startRowCli}:E${lastRowCli})` };
+          cTotFinalCli.numFmt = '#,##0.00 "€"';
+          cTotFinalCli.font = { name: 'Calibri', size: 11, bold: true, color: { argb: 'FF047857' } };
+          cTotFinalCli.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C.clienteBg } };
+          cTotFinalCli.alignment = { vertical: 'middle', horizontal: 'right' };
+          cTotFinalCli.border = borderTotal;
 
-          // Tarjeta adicional IRPF
-          row2Idx += 2;
-          ws2.mergeCells(`A${row2Idx}:D${row2Idx}`);
-          const cIrpfLabel = ws2.getCell(`A${row2Idx}`);
-          cIrpfLabel.value = 'RETENCIONES TOTALES DE IRPF (MODELO 111 / 190)';
+          const cellCuotaRepercutida = `D${totRowCliIdx}`;
+
+          // Espaciador
+          currentRow2++;
+          ws2.getRow(currentRow2).height = 12;
+          currentRow2++;
+
+          // -------------------------------------------------------------------
+          // BLOQUE 2: IVA SOPORTADO (FACTURAS DE PROVEEDORES - GASTOS [P])
+          // -------------------------------------------------------------------
+          ws2.mergeCells(`A${currentRow2}:E${currentRow2}`);
+          const secTitleProv = ws2.getCell(`A${currentRow2}`);
+          secTitleProv.value = '2. FACTURAS RECIBIDAS DE PROVEEDORES (P)  ·  IVA SOPORTADO DEDUCIBLE (GASTOS)';
+          secTitleProv.font = { name: 'Calibri', size: 10.5, bold: true, color: { argb: C.white } };
+          secTitleProv.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C.navySlate } };
+          secTitleProv.alignment = { vertical: 'middle', horizontal: 'left' };
+          ws2.getRow(currentRow2).height = 24;
+          currentRow2++;
+
+          const headersProv = ['Tipo Impositivo (Gastos / Proveedores)', 'Nº Documentos', 'Base Imponible Acumulada', 'Cuota IVA Soportado Deducible', 'Total con IVA'];
+          const hRowProv = ws2.getRow(currentRow2);
+          hRowProv.height = 24;
+          headersProv.forEach((h, i) => {
+            const cell = hRowProv.getCell(i + 1);
+            cell.value = h;
+            cell.font = { name: 'Calibri', size: 10, bold: true, color: { argb: C.white } };
+            cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF334155' } };
+            cell.alignment = { vertical: 'middle', horizontal: i === 0 ? 'left' : (i === 1 ? 'center' : 'right') };
+            cell.border = borderThin;
+          });
+          currentRow2++;
+
+          const startRowProv = currentRow2;
+          let provCountRows = 0;
+          Object.entries(desgloseProveedores).forEach(([tipo, datos], idx) => {
+            if (datos.docs > 0 || tipo.includes('21%') || tipo.includes('10%')) {
+              const r = ws2.getRow(currentRow2);
+              r.height = 22;
+              const isZebra = (provCountRows % 2 === 1);
+              const bg = isZebra ? C.bgZebra : C.white;
+
+              const cTipo = r.getCell(1);
+              cTipo.value = tipo;
+              cTipo.font = { name: 'Calibri', size: 10, bold: true, color: { argb: C.navyDark } };
+              cTipo.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: bg } };
+              cTipo.border = borderThin;
+              cTipo.alignment = { vertical: 'middle', horizontal: 'left' };
+
+              const cDocs = r.getCell(2);
+              cDocs.value = datos.docs;
+              cDocs.font = { name: 'Calibri', size: 10, color: { argb: C.navyLight } };
+              cDocs.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: bg } };
+              cDocs.border = borderThin;
+              cDocs.alignment = { vertical: 'middle', horizontal: 'center' };
+
+              const cBase = r.getCell(3);
+              cBase.value = Number(datos.base.toFixed(2));
+              cBase.numFmt = '#,##0.00 "€"';
+              cBase.font = { name: 'Calibri', size: 10, color: { argb: C.navyLight } };
+              cBase.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: bg } };
+              cBase.border = borderThin;
+              cBase.alignment = { vertical: 'middle', horizontal: 'right' };
+
+              const cCuota = r.getCell(4);
+              cCuota.value = Number(datos.cuota.toFixed(2));
+              cCuota.numFmt = '#,##0.00 "€"';
+              cCuota.font = { name: 'Calibri', size: 10, bold: true, color: { argb: C.navyDark } };
+              cCuota.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: bg } };
+              cCuota.border = borderThin;
+              cCuota.alignment = { vertical: 'middle', horizontal: 'right' };
+
+              const cTot = r.getCell(5);
+              cTot.value = { formula: `C${currentRow2}+D${currentRow2}` };
+              cTot.numFmt = '#,##0.00 "€"';
+              cTot.font = { name: 'Calibri', size: 10, color: { argb: C.navyDark } };
+              cTot.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: isZebra ? 'FFF1F5F9' : 'FFFAFAFA' } };
+              cTot.border = borderThin;
+              cTot.alignment = { vertical: 'middle', horizontal: 'right' };
+
+              currentRow2++;
+              provCountRows++;
+            }
+          });
+
+          const lastRowProv = currentRow2 - 1;
+          const totRowProvIdx = currentRow2;
+          const totRowProv = ws2.getRow(totRowProvIdx);
+          totRowProv.height = 25;
+
+          const cTotLabelProv = totRowProv.getCell(1);
+          cTotLabelProv.value = 'TOTAL IVA SOPORTADO (B)';
+          cTotLabelProv.font = { name: 'Calibri', size: 10.5, bold: true, color: { argb: C.proveedorText } };
+          cTotLabelProv.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C.proveedorBg } };
+          cTotLabelProv.alignment = { vertical: 'middle', horizontal: 'left' };
+          cTotLabelProv.border = borderTotal;
+
+          const cTotDocsProv = totRowProv.getCell(2);
+          cTotDocsProv.value = { formula: `SUM(B${startRowProv}:B${lastRowProv})` };
+          cTotDocsProv.font = { name: 'Calibri', size: 10.5, bold: true, color: { argb: C.proveedorText } };
+          cTotDocsProv.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C.proveedorBg } };
+          cTotDocsProv.alignment = { vertical: 'middle', horizontal: 'center' };
+          cTotDocsProv.border = borderTotal;
+
+          const cTotBaseProv = totRowProv.getCell(3);
+          cTotBaseProv.value = { formula: `SUM(C${startRowProv}:C${lastRowProv})` };
+          cTotBaseProv.numFmt = '#,##0.00 "€"';
+          cTotBaseProv.font = { name: 'Calibri', size: 10.5, bold: true, color: { argb: C.proveedorText } };
+          cTotBaseProv.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C.proveedorBg } };
+          cTotBaseProv.alignment = { vertical: 'middle', horizontal: 'right' };
+          cTotBaseProv.border = borderTotal;
+
+          const cTotCuotaProv = totRowProv.getCell(4);
+          cTotCuotaProv.value = { formula: `SUM(D${startRowProv}:D${lastRowProv})` };
+          cTotCuotaProv.numFmt = '#,##0.00 "€"';
+          cTotCuotaProv.font = { name: 'Calibri', size: 11, bold: true, color: { argb: C.proveedorText } };
+          cTotCuotaProv.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C.proveedorBg } };
+          cTotCuotaProv.alignment = { vertical: 'middle', horizontal: 'right' };
+          cTotCuotaProv.border = borderTotal;
+
+          const cTotFinalProv = totRowProv.getCell(5);
+          cTotFinalProv.value = { formula: `SUM(E${startRowProv}:E${lastRowProv})` };
+          cTotFinalProv.numFmt = '#,##0.00 "€"';
+          cTotFinalProv.font = { name: 'Calibri', size: 11, bold: true, color: { argb: C.proveedorText } };
+          cTotFinalProv.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C.proveedorBg } };
+          cTotFinalProv.alignment = { vertical: 'middle', horizontal: 'right' };
+          cTotFinalProv.border = borderTotal;
+
+          const cellCuotaSoportada = `D${totRowProvIdx}`;
+
+          // Espaciador
+          currentRow2++;
+          ws2.getRow(currentRow2).height = 14;
+          currentRow2++;
+
+          // -------------------------------------------------------------------
+          // BLOQUE 3: CUADRO DE LIQUIDACIÓN TRIBUTARIA DE IVA (MODELO 303)
+          // -------------------------------------------------------------------
+          ws2.mergeCells(`A${currentRow2}:E${currentRow2}`);
+          const secTitleLiq = ws2.getCell(`A${currentRow2}`);
+          secTitleLiq.value = '3. CUADRO DE LIQUIDACIÓN DE IVA (MODELO 303: REPERCUTIDO - SOPORTADO)';
+          secTitleLiq.font = { name: 'Calibri', size: 11, bold: true, color: { argb: C.white } };
+          secTitleLiq.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C.navyDark } };
+          secTitleLiq.alignment = { vertical: 'middle', horizontal: 'left' };
+          ws2.getRow(currentRow2).height = 26;
+          currentRow2++;
+
+          // Fila A: (+) IVA Repercutido Clientes
+          const rowLiqA = ws2.getRow(currentRow2);
+          rowLiqA.height = 23;
+          ws2.mergeCells(`A${currentRow2}:C${currentRow2}`);
+          const cLiqALabel = rowLiqA.getCell(1);
+          cLiqALabel.value = '(+) IVA Repercutido Total (Facturas Emitidas a Clientes [A])';
+          cLiqALabel.font = { name: 'Calibri', size: 10, bold: true, color: { argb: C.navyDark } };
+          cLiqALabel.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C.white } };
+          cLiqALabel.alignment = { vertical: 'middle', horizontal: 'left' };
+          for (let c = 1; c <= 3; c++) rowLiqA.getCell(c).border = borderThin;
+
+          const cLiqAVal = rowLiqA.getCell(4);
+          cLiqAVal.value = { formula: `${cellCuotaRepercutida}` };
+          cLiqAVal.numFmt = '#,##0.00 "€"';
+          cLiqAVal.font = { name: 'Calibri', size: 10.5, bold: true, color: { argb: 'FF047857' } };
+          cLiqAVal.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C.white } };
+          cLiqAVal.alignment = { vertical: 'middle', horizontal: 'right' };
+          cLiqAVal.border = borderThin;
+
+          const cLiqANote = rowLiqA.getCell(5);
+          cLiqANote.value = 'Cuota devengada';
+          cLiqANote.font = { name: 'Calibri', size: 9, italic: true, color: { argb: C.slateText } };
+          cLiqANote.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C.white } };
+          cLiqANote.alignment = { vertical: 'middle', horizontal: 'center' };
+          cLiqANote.border = borderThin;
+          currentRow2++;
+
+          // Fila B: (-) IVA Soportado Proveedores
+          const rowLiqB = ws2.getRow(currentRow2);
+          rowLiqB.height = 23;
+          ws2.mergeCells(`A${currentRow2}:C${currentRow2}`);
+          const cLiqBLabel = rowLiqB.getCell(1);
+          cLiqBLabel.value = '(-) IVA Soportado Deducible Total (Facturas de Proveedores [B])';
+          cLiqBLabel.font = { name: 'Calibri', size: 10, bold: true, color: { argb: C.navyDark } };
+          cLiqBLabel.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C.white } };
+          cLiqBLabel.alignment = { vertical: 'middle', horizontal: 'left' };
+          for (let c = 1; c <= 3; c++) rowLiqB.getCell(c).border = borderThin;
+
+          const cLiqBVal = rowLiqB.getCell(4);
+          cLiqBVal.value = { formula: `${cellCuotaSoportada}` };
+          cLiqBVal.numFmt = '#,##0.00 "€"';
+          cLiqBVal.font = { name: 'Calibri', size: 10.5, bold: true, color: { argb: C.proveedorText } };
+          cLiqBVal.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C.white } };
+          cLiqBVal.alignment = { vertical: 'middle', horizontal: 'right' };
+          cLiqBVal.border = borderThin;
+
+          const cLiqBNote = rowLiqB.getCell(5);
+          cLiqBNote.value = 'Cuota deducible';
+          cLiqBNote.font = { name: 'Calibri', size: 9, italic: true, color: { argb: C.slateText } };
+          cLiqBNote.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C.white } };
+          cLiqBNote.alignment = { vertical: 'middle', horizontal: 'center' };
+          cLiqBNote.border = borderThin;
+          currentRow2++;
+
+          // Fila C: RESULTADO DE LA LIQUIDACIÓN
+          const rowLiqRes = ws2.getRow(currentRow2);
+          rowLiqRes.height = 30;
+          ws2.mergeCells(`A${currentRow2}:C${currentRow2}`);
+          const cLiqResLabel = rowLiqRes.getCell(1);
+          cLiqResLabel.value = '(=) RESULTADO DE LA LIQUIDACIÓN (Repercutido - Soportado)';
+          cLiqResLabel.font = { name: 'Calibri', size: 11, bold: true, color: { argb: C.indigoText } };
+          cLiqResLabel.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C.indigoBg } };
+          cLiqResLabel.alignment = { vertical: 'middle', horizontal: 'left' };
+          for (let c = 1; c <= 3; c++) {
+            rowLiqRes.getCell(c).border = borderTotal;
+            rowLiqRes.getCell(c).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C.indigoBg } };
+          }
+
+          // Cálculo del valor JS para estilos
+          let cuotaCliJS = 0, cuotaProvJS = 0;
+          facturasClientes.forEach(i => { cuotaCliJS += (Number(i.iva) || 0); });
+          facturasProveedores.forEach(i => { cuotaProvJS += (Number(i.iva) || 0); });
+          const liqNetoJS = cuotaCliJS - cuotaProvJS;
+
+          const cLiqResVal = rowLiqRes.getCell(4);
+          cLiqResVal.value = { formula: `${cellCuotaRepercutida}-${cellCuotaSoportada}` };
+          cLiqResVal.numFmt = '+#,##0.00 "€";-#,##0.00 "€";0.00 "€"';
+          cLiqResVal.font = { name: 'Calibri', size: 12, bold: true, color: { argb: liqNetoJS >= 0 ? 'FF92400E' : 'FF166534' } };
+          cLiqResVal.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: liqNetoJS >= 0 ? C.revisarBg : C.cuadraBg } };
+          cLiqResVal.alignment = { vertical: 'middle', horizontal: 'right' };
+          cLiqResVal.border = borderTotal;
+
+          const cLiqResEstado = rowLiqRes.getCell(5);
+          // Fórmula condicional de Excel para diagnosticar si es a pagar o a devolver
+          cLiqResEstado.value = { formula: `IF(D${currentRow2}>=0,"TOTAL IVA A PAGAR","TOTAL IVA A DEVOLVER")` };
+          cLiqResEstado.font = { name: 'Calibri', size: 11, bold: true, color: { argb: liqNetoJS >= 0 ? 'FF92400E' : 'FF166534' } };
+          cLiqResEstado.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: liqNetoJS >= 0 ? C.revisarBg : C.cuadraBg } };
+          cLiqResEstado.alignment = { vertical: 'middle', horizontal: 'center' };
+          cLiqResEstado.border = borderTotal;
+          currentRow2++;
+
+          // Fila Explicación de la Regla Fiscal
+          ws2.mergeCells(`A${currentRow2}:E${currentRow2}`);
+          const cLiqHelp = ws2.getCell(`A${currentRow2}`);
+          cLiqHelp.value = 'Nota tributaria: IVA Repercutido - IVA Soportado = Total IVA a pagar. Si el resultado es negativo (-), resulta una cuota de IVA a devolver o compensar.';
+          cLiqHelp.font = { name: 'Calibri', size: 9, italic: true, color: { argb: C.slateText } };
+          cLiqHelp.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF8FAFC' } };
+          cLiqHelp.alignment = { vertical: 'middle', horizontal: 'center' };
+          cLiqHelp.border = { bottom: { style: 'thin', color: { argb: C.borderLight } } };
+          ws2.getRow(currentRow2).height = 20;
+          currentRow2 += 2;
+
+          // -------------------------------------------------------------------
+          // BLOQUE 4: RETENCIONES TOTALES DE IRPF
+          // -------------------------------------------------------------------
+          let totalIrpfAcumulado = 0;
+          appState.invoices.forEach(inv => { totalIrpfAcumulado += (Number(inv.irpf) || 0); });
+
+          ws2.mergeCells(`A${currentRow2}:D${currentRow2}`);
+          const cIrpfLabel = ws2.getCell(`A${currentRow2}`);
+          cIrpfLabel.value = '4. RETENCIONES TOTALES DE IRPF (MODELO 111 / 190)';
           cIrpfLabel.font = { name: 'Calibri', size: 10, bold: true, color: { argb: C.navyDark } };
           cIrpfLabel.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFEF3C7' } };
           cIrpfLabel.alignment = { vertical: 'middle', horizontal: 'left' };
           for (let c = 1; c <= 4; c++) {
-            ws2.getCell(row2Idx, c).border = borderThin;
-            ws2.getCell(row2Idx, c).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFEF3C7' } };
+            ws2.getCell(currentRow2, c).border = borderThin;
+            ws2.getCell(currentRow2, c).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFEF3C7' } };
           }
 
-          const cIrpfVal = ws2.getCell(`E${row2Idx}`);
+          const cIrpfVal = ws2.getCell(`E${currentRow2}`);
           cIrpfVal.value = Number(totalIrpfAcumulado.toFixed(2));
           cIrpfVal.numFmt = '#,##0.00 "€"';
           cIrpfVal.font = { name: 'Calibri', size: 11, bold: true, color: { argb: 'FF92400E' } };
           cIrpfVal.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFEF3C7' } };
           cIrpfVal.alignment = { vertical: 'middle', horizontal: 'right' };
           cIrpfVal.border = borderThin;
-          ws2.getRow(row2Idx).height = 24;
+          ws2.getRow(currentRow2).height = 24;
 
           // ===================================================================
           // HOJA 3: RESUMEN EJECUTIVO
@@ -3581,7 +3985,7 @@ Los importes monetarios deben ser números decimales puros (sin símbolos €). 
           // Sección 2: Económico
           ws3.mergeCells(`A${r3}:B${r3}`);
           const sec2 = ws3.getCell(`A${r3}`);
-          sec2.value = '2. TOTALES ECONÓMICOS CONSOLIDADOS';
+          sec2.value = '2. TOTALES ECONÓMICOS Y LIQUIDACIÓN FISCAL';
           sec2.font = { name: 'Calibri', size: 10.5, bold: true, color: { argb: C.white } };
           sec2.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C.navySlate } };
           sec2.alignment = { vertical: 'middle', horizontal: 'left' };
@@ -3589,36 +3993,61 @@ Los importes monetarios deben ser números decimales puros (sin símbolos €). 
           r3++;
 
           let sumBase = 0, sumIva = 0, sumIrpf = 0, sumTot = 0;
+          let sumBaseCli = 0, sumBaseProv = 0;
+          let sumIvaCli = 0, sumIvaProv = 0;
+
           appState.invoices.forEach(i => {
-            sumBase += Number(i.base) || 0;
-            sumIva += Number(i.iva) || 0;
-            sumIrpf += Number(i.irpf) || 0;
-            sumTot += Number(i.total) || 0;
+            const b = Number(i.base) || 0;
+            const v = Number(i.iva) || 0;
+            const r = Number(i.irpf) || 0;
+            const t = Number(i.total) || 0;
+
+            sumBase += b;
+            sumIva += v;
+            sumIrpf += r;
+            sumTot += t;
+
+            if (i.tipo === 'C') {
+              sumBaseCli += b;
+              sumIvaCli += v;
+            } else {
+              sumBaseProv += b;
+              sumIvaProv += v;
+            }
           });
 
+          const liquidacionFinal = sumIvaCli - sumIvaProv;
+          const liqLabel = liquidacionFinal >= 0
+            ? 'TOTAL IVA A PAGAR A HACIENDA (+)'
+            : 'TOTAL IVA A DEVOLVER O COMPENSAR (-)';
+
           const econRows = [
-            ['Base Imponible Total', sumBase, false],
-            ['IVA Total Soportado', sumIva, false],
-            ['Retenciones de IRPF Totales', sumIrpf, false],
-            ['TOTAL FACTURADO (Gasto Total Bruto)', sumTot, true]
+            ['Base Imponible Total', sumBase, false, C.white, C.navyDark],
+            ['  ↳ Base Ventas (Facturas Clientes [C])', sumBaseCli, false, C.white, C.navyLight],
+            ['  ↳ Base Gastos (Facturas Proveedores [P])', sumBaseProv, false, C.white, C.navyLight],
+            ['(+) IVA Repercutido (Facturas Clientes [C])', sumIvaCli, false, C.clienteBg, C.clienteText],
+            ['(-) IVA Soportado (Facturas Proveedores [P])', sumIvaProv, false, C.proveedorBg, C.proveedorText],
+            [liqLabel, liquidacionFinal, true, liquidacionFinal >= 0 ? C.revisarBg : C.cuadraBg, liquidacionFinal >= 0 ? C.revisarText : C.cuadraText],
+            ['Retenciones de IRPF Totales', sumIrpf, false, C.white, C.navyDark],
+            ['TOTAL FACTURADO BRUTO ACUMULADO', sumTot, true, C.indigoBg, C.indigoText]
           ];
 
-          econRows.forEach(([label, val, isFinal]) => {
+          econRows.forEach(([label, val, isFinal, bg, fg]) => {
             const row = ws3.getRow(r3);
-            row.height = isFinal ? 30 : 22;
+            row.height = isFinal ? 28 : 22;
 
             const c1 = row.getCell(1);
             c1.value = label;
             c1.font = {
               name: 'Calibri',
-              size: isFinal ? 11.5 : 10,
+              size: isFinal ? 11 : 10,
               bold: isFinal,
-              color: { argb: isFinal ? C.indigoText : C.navyDark }
+              color: { argb: fg || (isFinal ? C.indigoText : C.navyDark) }
             };
             c1.fill = {
               type: 'pattern',
               pattern: 'solid',
-              fgColor: { argb: isFinal ? C.indigoBg : C.white }
+              fgColor: { argb: bg || (isFinal ? C.indigoBg : C.white) }
             };
             c1.border = isFinal ? borderTotal : borderThin;
             c1.alignment = { vertical: 'middle', horizontal: 'left' };
@@ -3628,14 +4057,14 @@ Los importes monetarios deben ser números decimales puros (sin símbolos €). 
             c2.numFmt = '#,##0.00 "€"';
             c2.font = {
               name: 'Calibri',
-              size: isFinal ? 12 : 10.5,
+              size: isFinal ? 11.5 : 10,
               bold: true,
-              color: { argb: isFinal ? C.indigoText : C.navyDark }
+              color: { argb: fg || (isFinal ? C.indigoText : C.navyDark) }
             };
             c2.fill = {
               type: 'pattern',
               pattern: 'solid',
-              fgColor: { argb: isFinal ? C.indigoBg : C.white }
+              fgColor: { argb: bg || (isFinal ? C.indigoBg : C.white) }
             };
             c2.border = isFinal ? borderTotal : borderThin;
             c2.alignment = { vertical: 'middle', horizontal: 'right' };
@@ -3657,7 +4086,7 @@ Los importes monetarios deben ser números decimales puros (sin símbolos €). 
             a.remove();
           }, 2000);
 
-          showToast(`Archivo Excel «${fileName}» generado con formato profesional`, 'success');
+          showToast(`Archivo Excel «${fileName}» generado con liquidación de IVA`, 'success');
           return;
         }
 
@@ -3667,8 +4096,9 @@ Los importes monetarios deben ser números decimales puros (sin símbolos €). 
         if (window.XLSX) {
           const wb = XLSX.utils.book_new();
 
+          // 1. Hoja Facturas
           const facturasHeaders = [
-            "Estado", "Proveedor", "NIF / CIF", "Fecha", "Número Factura",
+            "Estado", "Tipo (P/C)", "Proveedor / Cliente", "NIF / CIF", "Fecha", "Número Factura",
             "Base Imponible (€)", "Cuota IVA (€)", "Retención IRPF (€)", "Total Factura (€)",
             "Archivo Original", "Incidencias de Auditoría"
           ];
@@ -3676,6 +4106,7 @@ Los importes monetarios deben ser números decimales puros (sin símbolos €). 
           appState.invoices.forEach(inv => {
             facturasData.push([
               inv.estado,
+              inv.tipo === 'C' ? 'C (Cliente)' : 'P (Proveedor)',
               inv.proveedor || "",
               inv.nif || "",
               inv.fecha || "",
@@ -3690,10 +4121,29 @@ Los importes monetarios deben ser números decimales puros (sin símbolos €). 
           });
           const wsFacturas = XLSX.utils.aoa_to_sheet(facturasData);
           wsFacturas['!cols'] = [
-            { wch: 14 }, { wch: 28 }, { wch: 14 }, { wch: 12 }, { wch: 16 },
+            { wch: 14 }, { wch: 14 }, { wch: 28 }, { wch: 14 }, { wch: 12 }, { wch: 16 },
             { wch: 18 }, { wch: 15 }, { wch: 18 }, { wch: 18 }, { wch: 24 }, { wch: 38 }
           ];
           XLSX.utils.book_append_sheet(wb, wsFacturas, "Facturas");
+
+          // 2. Hoja Desglose IVA y Liquidación
+          let sumIvaCli = 0, sumIvaProv = 0;
+          appState.invoices.forEach(i => {
+            if (i.tipo === 'C') sumIvaCli += (Number(i.iva) || 0);
+            else sumIvaProv += (Number(i.iva) || 0);
+          });
+          const liqNeto = sumIvaCli - sumIvaProv;
+
+          const ivaData = [
+            ["DESGLOSE FISCAL Y LIQUIDACIÓN DE IVA (MODELO 303)"],
+            ["Concepto", "Base Imponible (€)", "Cuota IVA (€)", "Total (€)"],
+            ["IVA Repercutido (Facturas Clientes [C])", "", Number(sumIvaCli.toFixed(2)), ""],
+            ["IVA Soportado Deducible (Facturas Proveedores [P])", "", Number(sumIvaProv.toFixed(2)), ""],
+            ["RESULTADO LIQUIDACIÓN (Repercutido - Soportado)", "", Number(liqNeto.toFixed(2)), liqNeto >= 0 ? "A PAGAR" : "A DEVOLVER"]
+          ];
+          const wsIva = XLSX.utils.aoa_to_sheet(ivaData);
+          XLSX.utils.book_append_sheet(wb, wsIva, "Desglose IVA");
+
           XLSX.writeFile(wb, fileName);
           showToast(`Archivo Excel «${fileName}» descargado`, 'success');
         } else {
@@ -3727,6 +4177,7 @@ Los importes monetarios deben ser números decimales puros (sin símbolos €). 
           iva: inv.iva,
           irpf: inv.irpf,
           total: inv.total,
+          tipo: inv.tipo || 'P',
           tipoIvaPct: inv.tipoIvaPct
         }));
         localStorage.setItem(STORAGE_KEY_DATA, JSON.stringify(lightInvoices));
@@ -3739,8 +4190,11 @@ Los importes monetarios deben ser números decimales puros (sin símbolos €). 
       try {
         const saved = localStorage.getItem(STORAGE_KEY_DATA);
         if (saved) {
-          appState.invoices = JSON.parse(saved);
-          reevaluarAuditoria();
+          const loaded = JSON.parse(saved);
+          if (Array.isArray(loaded)) {
+            appState.invoices = loaded.map(i => ({ ...i, tipo: i.tipo || 'P' }));
+            reevaluarAuditoria();
+          }
         }
       } catch (e) {
         console.warn('Error cargando facturas guardadas:', e);
@@ -3774,6 +4228,7 @@ Los importes monetarios deben ser números decimales puros (sin símbolos €). 
           iva: 262.50,
           irpf: 0.00,
           total: 1512.50, // 1250 + 262.50 = 1512.50 -> CUADRA (VERDE)
+          tipo: 'P',
           tipoIvaPct: 21
         },
         {
@@ -3789,6 +4244,7 @@ Los importes monetarios deben ser números decimales puros (sin símbolos €). 
           iva: 3.52,
           irpf: 0.00,
           total: 38.70, // 35.18 + 3.52 = 38.70 -> CUADRA (VERDE)
+          tipo: 'P',
           tipoIvaPct: 10
         },
         {
@@ -3796,7 +4252,7 @@ Los importes monetarios deben ser números decimales puros (sin símbolos €). 
           fileName: 'Factura_Diseno_Freelance.pdf',
           fileType: 'application/pdf',
           fileUrl: pdfUrl,
-          proveedor: 'Carlos Fernández Diseñador',
+          proveedor: 'Carlos Fernández (Cliente)',
           nif: '53000000L', // DNI 100% válido
           fecha: '2026-03-15',
           numero: 'FAC-2026/04',
@@ -3804,6 +4260,7 @@ Los importes monetarios deben ser números decimales puros (sin símbolos €). 
           iva: 210.00,
           irpf: 150.00,
           total: 1060.00, // 1000 + 210 - 150 = 1060 -> CUADRA (VERDE)
+          tipo: 'C',
           tipoIvaPct: 21
         },
         {
@@ -3819,6 +4276,7 @@ Los importes monetarios deben ser números decimales puros (sin símbolos €). 
           iva: 16.80,
           irpf: 0.00,
           total: 96.80,
+          tipo: 'P',
           tipoIvaPct: 21
         },
         {
@@ -3834,6 +4292,7 @@ Los importes monetarios deben ser números decimales puros (sin símbolos €). 
           iva: 42.00,
           irpf: 0.00,
           total: 250.00, // ERROR: 200 + 42 = 242 != 250 -> NO CUADRA (ROJO)
+          tipo: 'P',
           tipoIvaPct: 21
         },
         {
@@ -3849,6 +4308,7 @@ Los importes monetarios deben ser números decimales puros (sin símbolos €). 
           iva: 262.50,
           irpf: 0.00,
           total: 1512.50,
+          tipo: 'P',
           tipoIvaPct: 21
         }
       ];
