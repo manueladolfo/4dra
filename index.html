@@ -1291,40 +1291,105 @@
           select.appendChild(opt);
         });
 
-        // 2. Probar generación real con el modelo preferido
-        const preferred = ['gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-1.5-flash-8b', 'gemini-1.5-pro'];
+        // 2. Probar generación real con los modelos disponibles (priorizando los rápidos)
+        // Imagen mínima de prueba 1x1 png para validar soporte multimodal
+        const sample1x1Png = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==";
+        
         let workingModel = null;
+        let lastPingError = '';
 
-        for (const pref of preferred) {
-          if (availableModels.some(m => m.name.endsWith(pref))) {
-            // Intentar un ping de texto
-            const pingUrl = `https://generativelanguage.googleapis.com/v1beta/models/${pref}:generateContent?key=${encodeURIComponent(key)}`;
-            const pingResp = await fetch(pingUrl, {
+        // Buscar entre los modelos disponibles el mejor candidato
+        const modelNames = availableModels.map(m => m.name.replace(/^models\//, ''));
+        const priorityOrder = ['gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-1.5-flash-8b', 'gemini-1.5-pro'];
+        
+        const sortedModels = [
+          ...priorityOrder.filter(p => modelNames.includes(p)),
+          ...modelNames.filter(m => !priorityOrder.includes(m))
+        ];
+
+        for (const mName of sortedModels) {
+          const testUrl = `https://generativelanguage.googleapis.com/v1beta/models/${mName}:generateContent?key=${encodeURIComponent(key)}`;
+          try {
+            const tResp = await fetch(testUrl, {
               method: 'POST',
               headers: { 
                 'Content-Type': 'application/json',
                 'x-goog-api-key': key
               },
               body: JSON.stringify({
-                contents: [{ parts: [{ text: "ping" }] }]
+                contents: [{
+                  parts: [
+                    { text: "Responde solo: OK" },
+                    { inlineData: { mimeType: "image/png", data: sample1x1Png } }
+                  ]
+                }],
+                generationConfig: { temperature: 0.1 }
               })
-            }).catch(() => null);
+            });
 
-            if (pingResp && pingResp.ok) {
-              workingModel = pref;
+            if (tResp.ok) {
+              workingModel = mName;
               break;
+            } else {
+              const errTxt = await tResp.text();
+              lastPingError = `${mName}: HTTP ${tResp.status} - ${errTxt.slice(0, 80)}`;
             }
+          } catch (e) {
+            lastPingError = e.message;
           }
         }
 
-        // Si ninguno de los preferidos funcionó, probar el primero de la lista
-        if (!workingModel && availableModels.length > 0) {
-          workingModel = availableModels[0].name.replace(/^models\//, '');
+        // Si falló el test con imagen, probar con texto simple
+        if (!workingModel) {
+          for (const mName of sortedModels) {
+            const testUrl = `https://generativelanguage.googleapis.com/v1beta/models/${mName}:generateContent?key=${encodeURIComponent(key)}`;
+            try {
+              const tResp = await fetch(testUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'x-goog-api-key': key },
+                body: JSON.stringify({ contents: [{ parts: [{ text: "ping" }] }] })
+              });
+              if (tResp.ok) {
+                workingModel = mName;
+                break;
+              }
+            } catch (e) {}
+          }
         }
 
         if (workingModel) {
           select.value = workingModel;
           appState.model = workingModel;
+          appState.apiKey = key;
+          
+          // Auto-guardar inmediatamente en localStorage para evitar olvidos
+          localStorage.setItem(STORAGE_KEY_API, key);
+          localStorage.setItem(STORAGE_KEY_MODEL, workingModel);
+          updateApiKeyBadge();
+
+          if (statusMsg) {
+            statusMsg.innerHTML = `
+              <div style="background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 8px; padding: 10px; margin-top: 8px;">
+                <div style="color: #34d399; font-weight: 700;">✓ Conexión verificada y guardada</div>
+                <div style="color: #cbd5e1; font-size: 0.78rem; margin-top: 4px;">
+                  Modelo activo y probado: <strong style="color: #60a5fa;">${workingModel}</strong>.
+                  <br>Detectados ${availableModels.length} modelos en tu cuenta. Ya puedes cerrar este modal y subir facturas.
+                </div>
+              </div>
+            `;
+          }
+          if (showAlert) showToast(`✓ Verificado: usando ${workingModel}`, 'success');
+          return;
+        } else {
+          if (statusMsg) {
+            statusMsg.innerHTML = `
+              <div style="background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 8px; padding: 10px; margin-top: 8px;">
+                <div style="color: #fca5a5; font-weight: 700;">✕ No se pudo generar contenido con ningún modelo</div>
+                <div style="color: #cbd5e1; font-size: 0.75rem; margin-top: 4px; font-family: monospace;">${lastPingError}</div>
+              </div>
+            `;
+          }
+          if (showAlert) showToast('Error al probar modelos de generación', 'error');
         }
 
         if (statusMsg) {
@@ -1771,66 +1836,65 @@
     async function callGeminiExtractInvoice(file, base64Data) {
       const apiKey = sanitizeApiKey(appState.apiKey);
       if (!apiKey) {
-        throw new Error('No hay clave de API configurada. Pulsa en «Configurar Gemini API».');
+        throw new Error('No hay clave de API configurada. Abre «Configurar Gemini API» y pulsa «Diagnosticar Clave».');
       }
 
-      // Modelos canónicos probados
-      const cleanCurrent = (appState.model || 'gemini-2.0-flash').replace(/[‐-―]/g, '-').replace(/^models\//, '').trim();
+      // Modelo activo
+      const activeModel = (appState.model || 'gemini-1.5-flash').replace(/[‐-―]/g, '-').replace(/^models\//, '').trim();
+      
+      // Lista priorizada de modelos para fallback
       const modelsToTry = [...new Set([
-        cleanCurrent,
-        'gemini-2.0-flash',
+        activeModel,
         'gemini-1.5-flash',
+        'gemini-2.0-flash',
         'gemini-1.5-flash-8b',
         'gemini-1.5-pro'
       ])];
 
-      let lastErrorMsg = '';
+      const cleanMime = file.type || (file.name.toLowerCase().endsWith('.pdf') ? 'application/pdf' : 'image/jpeg');
+      const cleanBase64 = base64Data.replace(/\s/g, '');
+
+      const prompt = `Eres un experto contable español. Analiza con máxima precisión esta factura o ticket de compra y extrae sus datos fiscales obligatorios.
+Devuelve EXACTAMENTE un objeto JSON con los siguientes campos numéricos y de texto (sin formato markdown adicional):
+{
+  "proveedor": "Nombre del emisor",
+  "nif": "NIF, CIF o NIE del emisor",
+  "fecha": "YYYY-MM-DD",
+  "numero": "Número de factura o ticket",
+  "base": 100.00,
+  "iva": 21.00,
+  "tipo_iva_pct": 21,
+  "irpf": 0.00,
+  "total": 121.00
+}
+Los importes monetarios deben ser números decimales puros (sin símbolos de moneda). Si un dato no existe, usa 0 o cadena vacía.`;
+
+      const requestBody = {
+        contents: [
+          {
+            parts: [
+              { text: prompt },
+              {
+                inlineData: {
+                  mimeType: cleanMime,
+                  data: cleanBase64
+                }
+              }
+            ]
+          }
+        ],
+        generationConfig: {
+          temperature: 0.1
+        }
+      };
+
+      let lastError = null;
 
       for (const modelToUse of modelsToTry) {
+        const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${modelToUse}:generateContent?key=${encodeURIComponent(apiKey)}`;
+        
         try {
-          const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${modelToUse}:generateContent?key=${encodeURIComponent(apiKey)}`;
-
-          const prompt = `Eres un experto contable español. Analiza con máxima precisión esta factura o ticket de compra y extrae sus datos fiscales obligatorios.
-Devuelve EXACTAMENTE un objeto JSON con los siguientes campos numéricos y de texto:
-- "proveedor": Nombre fiscal o comercial del emisor/vendedor.
-- "nif": NIF, CIF o NIE del emisor (ej: B12345678 o 12345678Z).
-- "fecha": Fecha de emisión en formato YYYY-MM-DD. Si no tiene año completo, deduce el año actual.
-- "numero": Número de factura, serie o número de ticket simplificado.
-- "base": Importe de la Base Imponible total (número decimal, ej: 100.00). Si solo aparece el total y el IVA desglosado, calcula base = total - iva.
-- "iva": Cuota total de IVA (número decimal, ej: 21.00).
-- "tipo_iva_pct": Porcentaje de IVA principal aplicado (ej: 21, 10, 4, 0).
-- "irpf": Cuota total de retención de IRPF si la hubiera (número decimal, ej: 15.00), o 0 si no aplica.
-- "total": Importe Total de la factura o ticket a pagar (número decimal, ej: 121.00).
-- "lineas": Array opcional con los conceptos de la factura.
-
-IMPORTANTE: 
-1. Los campos monetarios ("base", "iva", "irpf", "total") deben ser números flotantes con punto decimal, nunca strings ni símbolos de moneda (€).
-2. Si un dato no aparece, pon 0 en importes y cadena vacía en texto.
-Responde únicamente con el JSON sin bloques de código markdown ni texto adicional.`;
-
-          const cleanMime = file.type || (file.name.toLowerCase().endsWith('.pdf') ? 'application/pdf' : 'image/jpeg');
-
-          const requestBody = {
-            contents: [
-              {
-                role: "user",
-                parts: [
-                  { text: prompt },
-                  {
-                    inlineData: {
-                      mimeType: cleanMime,
-                      data: base64Data.replace(/\s/g, '')
-                    }
-                  }
-                ]
-              }
-            ],
-            generationConfig: {
-              temperature: 0.1,
-              responseMimeType: "application/json"
-            }
-          };
-
+          console.log(`Intentando extracción con modelo: ${modelToUse}...`);
           const response = await fetch(endpoint, {
             method: 'POST',
             headers: { 
@@ -1841,43 +1905,59 @@ Responde únicamente con el JSON sin bloques de código markdown ni texto adicio
           });
 
           if (!response.ok) {
-            const errorDetails = await response.text();
+            const errTxt = await response.text();
+            console.warn(`Modelo ${modelToUse} falló con HTTP ${response.status}:`, errTxt);
+            
+            // Si es 404 (modelo no encontrado en esta cuenta/versión), probamos siguiente modelo
             if (response.status === 404) {
-              lastErrorMsg = `Modelo ${modelToUse} (404)`;
-              continue; // Probar siguiente modelo
-            } else if (response.status === 400) {
-              throw new Error('API Key no válida o restringida (Error 400). Abre «Configurar Gemini API» y pulsa «Diagnosticar Clave».');
-            } else if (response.status === 403) {
-              throw new Error('Acceso denegado (Error 403). Abre «Configurar Gemini API» y pulsa «Diagnosticar Clave».');
+              lastError = new Error(`Modelo ${modelToUse} no encontrado (404)`);
+              continue;
             }
-            throw new Error(`Error API (${response.status}): ${errorDetails.slice(0, 100)}`);
+            // Si es 400 u otro error, guardar y continuar con otro modelo si es posible
+            lastError = new Error(`Error (${response.status}): ${errTxt.slice(0, 100)}`);
+            continue;
           }
 
           const result = await response.json();
           const rawText = result.candidates?.[0]?.content?.parts?.[0]?.text;
           
           if (!rawText) {
-            throw new Error('Gemini no devolvió texto en la respuesta');
+            throw new Error('Gemini devolvió respuesta vacía');
           }
 
-          // Guardar modelo exitoso
+          // Si este modelo funcionó y es distinto al guardado, actualizarlo
           if (modelToUse !== appState.model) {
             appState.model = modelToUse;
             localStorage.setItem(STORAGE_KEY_MODEL, modelToUse);
             updateApiKeyBadge();
+            console.log(`✓ Modelo auto-actualizado con éxito a: ${modelToUse}`);
           }
 
-          const cleanJsonStr = rawText.replace(/```json/gi, '').replace(/```/g, '').trim();
-          return JSON.parse(cleanJsonStr);
+          // Parseo seguro de JSON
+          return parseJsonFromText(rawText);
 
         } catch (err) {
-          if (!err.message.includes('404')) {
-            throw err;
-          }
+          lastError = err;
+          console.warn(`Error llamando a ${modelToUse}:`, err);
         }
       }
 
-      throw new Error(`No se pudo conectar con ningún modelo (404). Pulsa en «Configurar Gemini API» y luego en «Diagnosticar Clave» para ver los modelos activos en tu cuenta.`);
+      throw lastError || new Error('No se pudo procesar el documento con ningún modelo de Gemini');
+    }
+
+    function parseJsonFromText(rawText) {
+      if (!rawText) return {};
+      const clean = rawText.replace(/```json/gi, '').replace(/```/g, '').trim();
+      const start = clean.indexOf('{');
+      const end = clean.lastIndexOf('}');
+      if (start !== -1 && end !== -1) {
+        try {
+          return JSON.parse(clean.substring(start, end + 1));
+        } catch (e) {
+          console.error('Error parseando substring JSON:', e);
+        }
+      }
+      return JSON.parse(clean);
     }
 
     function cleanNif(str) {
