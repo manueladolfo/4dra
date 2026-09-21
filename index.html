@@ -79,7 +79,7 @@
       --bg-main: #f8fafc;
       --bg-surface: #ffffff;
       --bg-surface-alt: #f1f5f9;
-      --bg-card: rgba(255, 255, 255, 0.9);
+      --bg-card: #ffffff;
       --border-subtle: #e2e8f0;
       --border-focus: #2563eb;
       
@@ -91,7 +91,7 @@
       --color-primary-hover: #1d4ed8;
       --color-accent: #0284c7;
       
-      /* Estados de auditoría para modo claro */
+      /* Estados de auditoría para modo claro con contraste óptimo */
       --status-cuadra-bg: #ecfdf5;
       --status-cuadra-border: #a7f3d0;
       --status-cuadra-text: #047857;
@@ -108,10 +108,18 @@
       --status-duplicada-border: #e9d5ff;
       --status-duplicada-text: #7e22ce;
       
-      --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
-      --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.07);
-      --shadow-lg: 0 10px 25px -3px rgba(0, 0, 0, 0.1);
-      --shadow-glow: 0 0 20px rgba(37, 99, 235, 0.1);
+      --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.06), 0 1px 2px rgba(15, 23, 42, 0.04);
+      --shadow-md: 0 4px 14px rgba(15, 23, 42, 0.07), 0 2px 6px rgba(15, 23, 42, 0.04);
+      --shadow-lg: 0 12px 30px -4px rgba(15, 23, 42, 0.1), 0 4px 12px -2px rgba(15, 23, 42, 0.05);
+      --shadow-glow: 0 0 25px rgba(37, 99, 235, 0.12);
+    }
+
+    /* Fondo dinámico según modo claro u oscuro */
+    [data-theme="light"] body {
+      background-color: #f8fafc;
+      background-image: 
+        radial-gradient(ellipse 80% 45% at 50% -10%, rgba(37, 99, 235, 0.07), transparent 70%),
+        radial-gradient(ellipse 60% 35% at 90% 90%, rgba(2, 132, 199, 0.05), transparent);
     }
 
     * {
@@ -451,6 +459,77 @@
       color: var(--text-secondary);
       border: 1px solid var(--border-subtle);
       font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* Estilos pulidos y elegantes para Modo Claro */
+    [data-theme="light"] .brand-text h1 .brand-name {
+      background: linear-gradient(90deg, #0f172a 60%, #334155);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    [data-theme="light"] .btn-secondary {
+      background: #ffffff;
+      color: #334155;
+      border-color: #cbd5e1;
+      box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
+    }
+    [data-theme="light"] .btn-secondary:hover:not(:disabled) {
+      background: #f8fafc;
+      color: #0f172a;
+      border-color: #94a3b8;
+    }
+    [data-theme="light"] .btn-ghost {
+      color: #475569;
+    }
+    [data-theme="light"] .btn-ghost:hover:not(:disabled) {
+      background: rgba(15, 23, 42, 0.05);
+      color: #0f172a;
+    }
+    [data-theme="light"] .badge-api-key {
+      background: #ffffff;
+      border-color: #e2e8f0;
+      color: #475569;
+      box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+    }
+    [data-theme="light"] .badge-api-key:hover {
+      background: #f8fafc;
+      border-color: #cbd5e1;
+    }
+    [data-theme="light"] .kpi-card {
+      background: #ffffff;
+      border-color: #e2e8f0;
+      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04), 0 4px 12px -2px rgba(15, 23, 42, 0.03);
+    }
+    [data-theme="light"] .kpi-card:hover {
+      border-color: #cbd5e1;
+      box-shadow: 0 8px 20px -4px rgba(15, 23, 42, 0.08);
+    }
+    [data-theme="light"] .upload-zone {
+      background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+      border: 2px dashed #93c5fd;
+      box-shadow: 0 4px 20px -2px rgba(37, 99, 235, 0.06), 0 1px 3px rgba(15, 23, 42, 0.04);
+    }
+    [data-theme="light"] .upload-zone:hover, 
+    [data-theme="light"] .upload-zone.dragover {
+      border-color: #2563eb;
+      background: linear-gradient(180deg, #ffffff 0%, #eff6ff 100%);
+      box-shadow: 0 12px 28px -4px rgba(37, 99, 235, 0.15);
+    }
+    [data-theme="light"] .upload-icon {
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      color: #2563eb;
+    }
+    [data-theme="light"] .upload-title {
+      color: #0f172a;
+    }
+    [data-theme="light"] .upload-subtitle {
+      color: #64748b;
+    }
+    [data-theme="light"] .upload-tag {
+      background: #f1f5f9;
+      color: #475569;
+      border-color: #e2e8f0;
     }
 
     #file-input {
@@ -1312,68 +1391,59 @@
       display: block;
     }
 
-    /* Tooltip moderno de alto contraste con motivo visible en hover */
-    [data-tooltip] {
+    /* Distintivos de estado interactivos para hover/touch */
+    .status-badge {
+      cursor: pointer;
       position: relative;
+      user-select: none;
     }
-    [data-tooltip]::after {
-      content: attr(data-tooltip);
-      position: absolute;
-      bottom: calc(100% + 9px);
-      left: 50%;
-      transform: translateX(-50%) translateY(4px);
-      background: #090d16;
-      border: 1px solid rgba(255, 255, 255, 0.2);
+
+    /* Tooltip Flotante Global (Renderizado en document.body para evitar recortes de overflow) */
+    .app-floating-tooltip {
+      position: fixed;
+      z-index: 9999999;
+      pointer-events: none;
+      background: rgba(15, 23, 42, 0.96);
       color: #f8fafc;
-      padding: 8px 12px;
-      border-radius: 8px;
-      font-size: 0.76rem;
+      padding: 10px 14px;
+      border-radius: 10px;
+      font-size: 0.78rem;
       font-weight: 500;
-      line-height: 1.4;
-      white-space: normal;
-      width: max-content;
-      max-width: 320px;
-      pointer-events: none;
+      line-height: 1.45;
+      max-width: 360px;
+      box-shadow: 0 16px 36px -6px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.14);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
       opacity: 0;
-      visibility: hidden;
-      transition: opacity 0.18s ease, transform 0.18s ease, visibility 0.18s ease;
-      box-shadow: 0 10px 30px -4px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.08);
-      z-index: 10000;
-      text-transform: none;
-      text-align: left;
+      transform: scale(0.96) translateY(4px);
+      transition: opacity 0.14s ease, transform 0.14s ease;
+      display: none;
+      word-break: break-word;
     }
-    [data-tooltip]::before {
-      content: '';
-      position: absolute;
-      bottom: calc(100% + 3px);
-      left: 50%;
-      transform: translateX(-50%);
-      border-width: 6px 6px 0 6px;
-      border-style: solid;
-      border-color: #090d16 transparent transparent transparent;
-      opacity: 0;
-      visibility: hidden;
-      transition: opacity 0.18s ease, visibility 0.18s ease;
-      z-index: 10000;
-      pointer-events: none;
-    }
-    [data-tooltip]:hover::after {
+    .app-floating-tooltip.visible {
+      display: block;
       opacity: 1;
-      visibility: visible;
-      transform: translateX(-50%) translateY(0);
+      transform: scale(1) translateY(0);
     }
-    [data-tooltip]:hover::before {
-      opacity: 1;
-      visibility: visible;
+    .app-floating-tooltip .tooltip-header {
+      font-weight: 700;
+      font-size: 0.8rem;
+      margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
     }
-    [data-theme="light"] [data-tooltip]::after {
-      background: #0f172a;
+    .app-floating-tooltip .tooltip-body {
+      color: #cbd5e1;
+      font-size: 0.76rem;
+    }
+    [data-theme="light"] .app-floating-tooltip {
+      background: rgba(15, 23, 42, 0.96);
       color: #ffffff;
-      border-color: rgba(0, 0, 0, 0.25);
-      box-shadow: 0 10px 25px -4px rgba(0, 0, 0, 0.3);
+      box-shadow: 0 16px 36px -6px rgba(15, 23, 42, 0.35), 0 0 0 1px rgba(0, 0, 0, 0.15);
     }
-    [data-theme="light"] [data-tooltip]::before {
-      border-color: #0f172a transparent transparent transparent;
+    [data-theme="light"] .app-floating-tooltip .tooltip-body {
+      color: #e2e8f0;
     }
 
     @keyframes spin {
@@ -1758,6 +1828,7 @@
       updateApiKeyBadge();
       loadSavedInvoices();
       setupDragAndDrop();
+      initFloatingTooltipSystem();
     });
 
     /* ==========================================================================
@@ -2203,15 +2274,49 @@
     }
 
     /**
+     * Redondeo contable / fiscal:
+     * - Respuesta final con 2 decimales.
+     * - Si el tercer decimal no pasa de 5 (<= 5), se queda tal cual el segundo decimal.
+     * - Si el tercer decimal pasa de 5 (> 5: 6, 7, 8, 9), suma 1 en el segundo decimal.
+     */
+    function redondearFiscal(valor) {
+      if (valor === null || valor === undefined || isNaN(valor)) return 0;
+      const num = Number(valor);
+      if (!isFinite(num)) return 0;
+
+      const sign = num < 0 ? -1 : 1;
+      const abs = Math.abs(num);
+
+      // Formateo con precisión en string para evitar fallos de IEEE-754 en coma flotante
+      const str = abs.toFixed(6);
+      const parts = str.split('.');
+      const entero = parseInt(parts[0], 10) || 0;
+      const dec = parts[1] || '000000';
+
+      const d1 = dec.charAt(0);
+      const d2 = dec.charAt(1);
+      const d3 = parseInt(dec.charAt(2), 10); // Tercer decimal
+
+      let centimos = entero * 100 + parseInt(d1 + d2, 10);
+
+      // Si el tercer decimal pasa de 5 (> 5), sube un número al segundo
+      if (d3 > 5) {
+        centimos += 1;
+      }
+
+      return (sign * centimos) / 100;
+    }
+
+    /**
      * Motor de Auditoría Contable:
      * Calcula el estado de una factura: CUADRA, REVISAR, NO_CUADRA, DUPLICADA
      */
     function auditarFactura(row, allRows) {
       const incidencias = [];
-      const base = Number(row.base) || 0;
-      const iva = Number(row.iva) || 0;
-      const irpf = Number(row.irpf) || 0;
-      const total = Number(row.total) || 0;
+      const base = redondearFiscal(row.base);
+      const iva = redondearFiscal(row.iva);
+      const irpf = redondearFiscal(row.irpf);
+      const total = redondearFiscal(row.total);
 
       // 1. Detección de duplicadas (mismo número y mismo NIF o proveedor)
       const numFactura = (row.numero || '').toString().trim().toUpperCase();
@@ -2242,13 +2347,14 @@
         }
       }
 
-      // 2. Validación de la Ecuación Contable: Base + IVA - IRPF = Total
-      const sumaCalculada = base + iva - irpf;
-      const diferencia = Math.abs(sumaCalculada - total);
+      // 2. Validación de la Ecuación Contable: Base + IVA - IRPF = Total con redondeo fiscal
+      const sumaCalculada = redondearFiscal(base + iva - irpf);
+      const diferencia = redondearFiscal(Math.abs(sumaCalculada - total));
       // Margen de tolerancia de 5 céntimos (0.05 €) para absorber redondeos decimales de IRPF e IVA combinados
       const cuadraConTolerancia = diferencia <= 0.05;
       // Comprobar también si el emisor imprimió el Total antes de descontar la retención (Base + IVA = Total)
-      const cuadraSinIrpf = irpf > 0 && Math.abs((base + iva) - total) <= 0.05;
+      const sumaSinIrpf = redondearFiscal(base + iva);
+      const cuadraSinIrpf = irpf > 0 && Math.abs(sumaSinIrpf - total) <= 0.05;
 
       const cuadraMatematica = cuadraConTolerancia || cuadraSinIrpf;
 
@@ -2396,10 +2502,10 @@
             nif: cleanNif(extractedData.nif || ''),
             fecha: formatDateString(extractedData.fecha),
             numero: extractedData.numero || '',
-            base: Number(extractedData.base) || 0,
-            iva: Number(extractedData.iva) || 0,
-            irpf: Number(extractedData.irpf) || 0,
-            total: Number(extractedData.total) || 0,
+            base: redondearFiscal(extractedData.base),
+            iva: redondearFiscal(extractedData.iva),
+            irpf: redondearFiscal(extractedData.irpf),
+            total: redondearFiscal(extractedData.total),
             tipo: (extractedData.tipo === 'C') ? 'C' : 'P',
             tipoIvaPct: extractedData.tipo_iva_pct || 21,
             desgloseLineas: extractedData.lineas || []
@@ -2653,7 +2759,7 @@ Los importes monetarios deben ser números decimales puros (sin símbolos €). 
         tr.id = `row-${inv.id}`;
         tr.innerHTML = `
           <td>
-            <span class="status-badge ${badgeConfig.className}" data-tooltip="${escapeHtml(inv.auditMensaje || '')}" title="${escapeHtml(inv.auditMensaje || '')}">
+            <span class="status-badge ${badgeConfig.className}" data-audit-tooltip="${escapeHtml(inv.auditMensaje || '')}" tabindex="0" role="button" aria-label="Estado de auditoría: ${badgeConfig.text}">
               ${badgeConfig.icon}
               ${badgeConfig.text}
             </span>
@@ -2740,7 +2846,7 @@ Los importes monetarios deben ser números decimales puros (sin símbolos €). 
           card.id = `card-${inv.id}`;
           card.innerHTML = `
             <div class="invoice-card-header">
-              <span class="status-badge ${badgeConfig.className}" data-tooltip="${escapeHtml(inv.auditMensaje || '')}" title="${escapeHtml(inv.auditMensaje || '')}">
+              <span class="status-badge ${badgeConfig.className}" data-audit-tooltip="${escapeHtml(inv.auditMensaje || '')}" tabindex="0" role="button" aria-label="Estado de auditoría: ${badgeConfig.text}">
                 ${badgeConfig.icon}
                 ${badgeConfig.text}
               </span>
@@ -2895,7 +3001,7 @@ Los importes monetarios deben ser números decimales puros (sin símbolos €). 
       if (['base', 'iva', 'irpf', 'total'].includes(field)) {
         // Normalizar coma decimal a punto y quitar símbolos
         cleanVal = cleanVal.replace(/€/g, '').replace(/\s/g, '').replace(/,/g, '.');
-        inv[field] = parseFloat(cleanVal) || 0;
+        inv[field] = redondearFiscal(parseFloat(cleanVal) || 0);
       } else if (field === 'nif') {
         inv[field] = cleanNif(cleanVal);
       } else {
@@ -2982,27 +3088,27 @@ Los importes monetarios deben ser números decimales puros (sin símbolos €). 
       let ivaSoportado = 0;   // Proveedores (P)
 
       appState.invoices.forEach(i => {
-        const b = (Number(i.base) || 0);
-        const v = (Number(i.iva) || 0);
-        const r = (Number(i.irpf) || 0);
-        const t = (Number(i.total) || 0);
+        const b = redondearFiscal(i.base);
+        const v = redondearFiscal(i.iva);
+        const r = redondearFiscal(i.irpf);
+        const t = redondearFiscal(i.total);
 
-        sumBase += b;
-        sumIva += v;
-        sumIrpf += r;
-        sumTotal += t;
+        sumBase = redondearFiscal(sumBase + b);
+        sumIva = redondearFiscal(sumIva + v);
+        sumIrpf = redondearFiscal(sumIrpf + r);
+        sumTotal = redondearFiscal(sumTotal + t);
 
         if (i.tipo === 'C') {
-          ivaRepercutido += v;
+          ivaRepercutido = redondearFiscal(ivaRepercutido + v);
         } else {
-          ivaSoportado += v;
+          ivaSoportado = redondearFiscal(ivaSoportado + v);
         }
 
         if (i.estado === 'CUADRA') countCuadra++;
         else countAvisos++;
       });
 
-      const liquidacionIva = ivaRepercutido - ivaSoportado;
+      const liquidacionIva = redondearFiscal(ivaRepercutido - ivaSoportado);
 
       document.getElementById('kpi-total-docs').textContent = appState.invoices.length;
       document.getElementById('kpi-status-breakdown').textContent = `${countCuadra} correctas · ${countAvisos} con incidencias`;
@@ -4334,10 +4440,141 @@ Los importes monetarios deben ser números decimales puros (sin símbolos €). 
     }
 
     /* ==========================================================================
+       SISTEMA DE TOOLTIP FLOTANTE GLOBAL (SIN RECORTES DE OVERFLOW)
+       ========================================================================== */
+    function initFloatingTooltipSystem() {
+      let tooltipEl = document.getElementById('app-floating-tooltip');
+      if (!tooltipEl) {
+        tooltipEl = document.createElement('div');
+        tooltipEl.id = 'app-floating-tooltip';
+        tooltipEl.className = 'app-floating-tooltip';
+        tooltipEl.setAttribute('role', 'tooltip');
+        tooltipEl.setAttribute('aria-hidden', 'true');
+        document.body.appendChild(tooltipEl);
+      }
+
+      let activeTarget = null;
+      let hideTimeout = null;
+
+      function showTooltipFor(target) {
+        const message = target.getAttribute('data-audit-tooltip') || target.getAttribute('data-tooltip');
+        if (!message || !message.trim()) return;
+
+        activeTarget = target;
+        clearTimeout(hideTimeout);
+
+        // Header descriptivo con color e icono específico de estado
+        let headerHtml = '';
+        if (target.classList.contains('status-cuadra')) {
+          headerHtml = `<div class="tooltip-header" style="color: #34d399;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+            <span>Factura Cuadra</span>
+          </div>`;
+        } else if (target.classList.contains('status-nocuadra')) {
+          headerHtml = `<div class="tooltip-header" style="color: #f87171;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            <span>Factura No Cuadra</span>
+          </div>`;
+        } else if (target.classList.contains('status-revisar')) {
+          headerHtml = `<div class="tooltip-header" style="color: #fbbf24;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            <span>Requiere Revisión</span>
+          </div>`;
+        } else if (target.classList.contains('status-duplicada')) {
+          headerHtml = `<div class="tooltip-header" style="color: #c084fc;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            <span>Factura Duplicada</span>
+          </div>`;
+        }
+
+        tooltipEl.innerHTML = `${headerHtml}<div class="tooltip-body">${escapeHtml(message)}</div>`;
+        tooltipEl.style.display = 'block';
+
+        const rect = target.getBoundingClientRect();
+        const tooltipWidth = tooltipEl.offsetWidth || 280;
+        const tooltipHeight = tooltipEl.offsetHeight || 60;
+
+        // Centrado horizontal
+        let left = rect.left + (rect.width / 2) - (tooltipWidth / 2);
+        // Garantizar que nunca desborde los márgenes de la ventana
+        left = Math.max(12, Math.min(window.innerWidth - tooltipWidth - 12, left));
+
+        // Posicionamiento vertical: preferente arriba, o abajo si queda cerca del borde superior
+        let top = rect.top - tooltipHeight - 8;
+        if (top < 10) {
+          top = rect.bottom + 8;
+        }
+
+        tooltipEl.style.left = `${Math.round(left)}px`;
+        tooltipEl.style.top = `${Math.round(top)}px`;
+
+        requestAnimationFrame(() => {
+          tooltipEl.classList.add('visible');
+          tooltipEl.setAttribute('aria-hidden', 'false');
+        });
+      }
+
+      function hideTooltip() {
+        if (!tooltipEl) return;
+        tooltipEl.classList.remove('visible');
+        tooltipEl.setAttribute('aria-hidden', 'true');
+        hideTimeout = setTimeout(() => {
+          if (!tooltipEl.classList.contains('visible')) {
+            tooltipEl.style.display = 'none';
+          }
+        }, 150);
+        activeTarget = null;
+      }
+
+      // Delegación de eventos mouseenter y mouseleave inmediatos
+      document.addEventListener('mouseover', (e) => {
+        const badge = e.target.closest('[data-audit-tooltip], .status-badge');
+        if (badge) {
+          showTooltipFor(badge);
+        }
+      });
+
+      document.addEventListener('mouseout', (e) => {
+        const badge = e.target.closest('[data-audit-tooltip], .status-badge');
+        if (badge) {
+          hideTooltip();
+        }
+      });
+
+      // Accesibilidad con teclado
+      document.addEventListener('focusin', (e) => {
+        const badge = e.target.closest('[data-audit-tooltip], .status-badge');
+        if (badge) {
+          showTooltipFor(badge);
+        }
+      });
+
+      document.addEventListener('focusout', (e) => {
+        const badge = e.target.closest('[data-audit-tooltip], .status-badge');
+        if (badge) {
+          hideTooltip();
+        }
+      });
+
+      // Soporte táctil / clic en móvil
+      document.addEventListener('click', (e) => {
+        const badge = e.target.closest('[data-audit-tooltip], .status-badge');
+        if (badge) {
+          showTooltipFor(badge);
+          setTimeout(hideTooltip, 4500);
+        }
+      });
+
+      window.addEventListener('scroll', () => {
+        if (activeTarget) hideTooltip();
+      }, { passive: true });
+    }
+
+    /* ==========================================================================
        UTILIDADES DE FORMATO Y NOTIFICACIONES
        ========================================================================== */
     function formatMoney(amount) {
-      const num = Number(amount) || 0;
+      const num = redondearFiscal(amount);
       return num.toLocaleString('es-ES', {
         minimumFractionDigits: 2,
         maximumFractionDigits: 2
