@@ -2317,6 +2317,7 @@
       const iva = redondearFiscal(row.iva);
       const irpf = redondearFiscal(row.irpf);
       const total = redondearFiscal(row.total);
+      let suplidos = redondearFiscal(row.suplidos || 0);
 
       // 1. Detección de duplicadas (mismo número y mismo NIF o proveedor)
       const numFactura = (row.numero || '').toString().trim().toUpperCase();
@@ -2347,16 +2348,38 @@
         }
       }
 
-      // 2. Validación de la Ecuación Contable: Base + IVA - IRPF = Total con redondeo fiscal
+      // 2. Validación de la Ecuación Contable: Base + IVA - IRPF (+ Suplidos) = Total con redondeo fiscal
       const sumaCalculada = redondearFiscal(base + iva - irpf);
       const diferencia = redondearFiscal(Math.abs(sumaCalculada - total));
-      // Margen de tolerancia de 5 céntimos (0.05 €) para absorber redondeos decimales de IRPF e IVA combinados
+      // Margen de tolerancia estándar de 5 céntimos (0.05 €) para absorber redondeos
       const cuadraConTolerancia = diferencia <= 0.05;
+
+      // Comprobar con Suplidos extraídos: Base + IVA - IRPF + Suplidos = Total
+      const sumaConSuplidos = redondearFiscal(base + iva - irpf + suplidos);
+      const diferenciaConSuplidos = redondearFiscal(Math.abs(sumaConSuplidos - total));
+      const cuadraConSuplidosExplicito = (suplidos > 0 && diferenciaConSuplidos <= 0.05);
+
       // Comprobar también si el emisor imprimió el Total antes de descontar la retención (Base + IVA = Total)
       const sumaSinIrpf = redondearFiscal(base + iva);
       const cuadraSinIrpf = irpf > 0 && Math.abs(sumaSinIrpf - total) <= 0.05;
+      const cuadraSinIrpfConSuplidos = irpf > 0 && suplidos > 0 && Math.abs(redondearFiscal(base + iva + suplidos) - total) <= 0.05;
 
-      const cuadraMatematica = cuadraConTolerancia || cuadraSinIrpf;
+      // Detección automática en facturas notariales, registrales o de gestorías:
+      // Si la diferencia positiva entre Total y (Base + IVA - IRPF) coincide con el descuadre y el emisor tiene indicios notariales/arancelarios
+      let suplidosDetectados = suplidos;
+      let cuadraConSuplidosAuto = false;
+      if (!cuadraConTolerancia && !cuadraConSuplidosExplicito && !cuadraSinIrpf && !cuadraSinIrpfConSuplidos) {
+        const diffDirecta = redondearFiscal(total - sumaCalculada);
+        const esProfesionalAranceles = /notar|registr|gestor|procurad|colegio|arancel|abogad|minuta/i.test(provEmisor + ' ' + (row.fileName || ''));
+        if (diffDirecta > 0 && (esProfesionalAranceles || (row.desgloseLineas && row.desgloseLineas.length > 0))) {
+          suplidosDetectados = diffDirecta;
+          cuadraConSuplidosAuto = true;
+          row.suplidos = suplidosDetectados; // Asociar internamente para persistencia
+        }
+      }
+
+      const tieneSuplidos = cuadraConSuplidosExplicito || cuadraConSuplidosAuto;
+      const cuadraMatematica = cuadraConTolerancia || tieneSuplidos || cuadraSinIrpf || cuadraSinIrpfConSuplidos;
 
       // 3. Validación de Identificador Fiscal (NIF/CIF/NIE)
       let nifAdvertencia = false;
@@ -2391,20 +2414,21 @@
 
       // 7. Determinación del Estado y Mensaje para el Hover / Tooltip
       if (!cuadraMatematica) {
+        const diffReporte = (suplidosDetectados > 0) ? diferenciaConSuplidos : diferencia;
         // Si el descuadre es pequeño (menor a 20 céntimos), sugerir revisión en vez de no cuadra radical
-        if (diferencia <= 0.20) {
+        if (diffReporte <= 0.20) {
           return {
             estado: 'REVISAR',
-            diferencia: diferencia,
-            incidencias: [`Diferencia de ${formatMoney(diferencia)} € entre suma calculada y total`],
-            mensaje: `Revisar: diferencia de ${formatMoney(diferencia)} € entre suma calculada (${formatMoney(sumaCalculada)} €) y total (${formatMoney(total)} €)`
+            diferencia: diffReporte,
+            incidencias: [`Diferencia de ${formatMoney(diffReporte)} € entre suma calculada y total`],
+            mensaje: `Revisar: diferencia de ${formatMoney(diffReporte)} € entre suma calculada (${formatMoney(sumaCalculada)} €) y total (${formatMoney(total)} €)`
           };
         }
         return {
           estado: 'NO_CUADRA',
-          diferencia: diferencia,
-          incidencias: [`Descuadre contable de ${formatMoney(diferencia)} €`],
-          mensaje: `No cuadra: Base (${formatMoney(base)} €) + IVA (${formatMoney(iva)} €) - IRPF (${formatMoney(irpf)} €) = ${formatMoney(sumaCalculada)} €, pero el total impreso es ${formatMoney(total)} € (descuadre de ${formatMoney(diferencia)} €)`
+          diferencia: diffReporte,
+          incidencias: [`Descuadre contable de ${formatMoney(diffReporte)} €`],
+          mensaje: `No cuadra: Base (${formatMoney(base)} €) + IVA (${formatMoney(iva)} €) - IRPF (${formatMoney(irpf)} €) = ${formatMoney(sumaCalculada)} €, pero el total impreso es ${formatMoney(total)} € (descuadre de ${formatMoney(diffReporte)} €)`
         };
       }
 
@@ -2412,7 +2436,7 @@
       if (incidencias.length > 0) {
         return {
           estado: 'REVISAR',
-          diferencia: diferencia,
+          diferencia: tieneSuplidos ? 0 : diferencia,
           incidencias: incidencias,
           mensaje: `Revisar: ${incidencias.join(' · ')}`
         };
@@ -2420,13 +2444,15 @@
 
       // Cuentas y datos 100% correctos
       let msgCuadra = 'Correcto: la suma de base + IVA - IRPF cuadra con el total y los datos fiscales son válidos';
-      if (diferencia > 0.005) {
+      if (tieneSuplidos) {
+        msgCuadra = `Correcto: cuentas cuadradas (incluye ${formatMoney(suplidosDetectados)} € de suplidos/aranceles exentos de IVA e IRPF)`;
+      } else if (diferencia > 0.005) {
         msgCuadra = `Correcto: cuentas cuadradas con ajuste de redondeo de ${diferencia.toFixed(2)} € en el total`;
       }
 
       return {
         estado: 'CUADRA',
-        diferencia: diferencia,
+        diferencia: tieneSuplidos ? 0 : diferencia,
         incidencias: [],
         mensaje: msgCuadra
       };
@@ -2506,6 +2532,7 @@
             iva: redondearFiscal(extractedData.iva),
             irpf: redondearFiscal(extractedData.irpf),
             total: redondearFiscal(extractedData.total),
+            suplidos: redondearFiscal(extractedData.suplidos || 0),
             tipo: (extractedData.tipo === 'C') ? 'C' : 'P',
             tipoIvaPct: extractedData.tipo_iva_pct || 21,
             desgloseLineas: extractedData.lineas || []
@@ -2572,8 +2599,9 @@ REGLAS OBLIGATORIAS DE EXTRACCIÓN:
 5. "iva": Cuota total de IVA en euros.
 6. "tipo_iva_pct": Tipo de IVA aplicado (ej: 21, 10, 4, etc.).
 7. "irpf": Si la factura incluye RETENCIÓN o IRPF (muy habitual en alquileres con 19% o profesionales con 15%), extrae el importe positivo en euros (ej: si indica "RETENCION 19 % -204,13 €", pon irpf: 204.13). Si no hay retención, pon 0.
-8. "total": Importe final a pagar / LÍQUIDO A PAGAR (tras sumar IVA y restar retención). Si figura "LÍQUIDO A PAGAR" o "TOTAL FACTURA", ese es el total exacto.
-9. "tipo": Clasifica la factura: si es un gasto/compra recibido de un proveedor, indica "P". Si es un ingreso/venta emitido por nosotros a un cliente, indica "C". En caso de duda o por defecto, usa "P".
+8. "total": Importe final a pagar / LÍQUIDO A PAGAR (tras sumar IVA, restar retención y sumar suplidos si los hay). Si figura "LÍQUIDO A PAGAR" o "TOTAL FACTURA", ese es el total exacto.
+9. "suplidos": Si la factura es de un notario, registrador o gestoría e incluye SUPLIDOS o conceptos exentos de IVA e IRPF (como "Desglose Suplidos", "Norma 8ª", "Suplidos y Derechos", etc.), extrae el importe positivo en euros (ej: 3.30). Si no hay suplidos, pon 0.
+10. "tipo": Clasifica la factura: si es un gasto/compra recibido de un proveedor, indica "P". Si es un ingreso/venta emitido por nosotros a un cliente, indica "C". En caso de duda o por defecto, usa "P".
 
 Devuelve ÚNICAMENTE un objeto JSON puro (sin formato markdown):
 {
@@ -2586,6 +2614,7 @@ Devuelve ÚNICAMENTE un objeto JSON puro (sin formato markdown):
   "tipo_iva_pct": 21,
   "tipo": "P",
   "irpf": 204.13,
+  "suplidos": 0.00,
   "total": 1095.90
 }
 Los importes monetarios deben ser números decimales puros (sin símbolos €). Si un dato no existe, usa 0 o cadena vacía.`;
@@ -3463,7 +3492,12 @@ Los importes monetarios deben ser números decimales puros (sin símbolos €). 
 
             // 12. Incidencias
             const cInc = row.getCell(12);
-            const incText = inv.incidencias && inv.incidencias.length > 0 ? inv.incidencias.join('; ') : '✓ Sin incidencias';
+            let incText = '✓ Sin incidencias';
+            if (inv.incidencias && inv.incidencias.length > 0) {
+              incText = inv.incidencias.join('; ');
+            } else if (inv.suplidos > 0) {
+              incText = `✓ Cuadra (incluye ${formatMoney(inv.suplidos)} € suplidos/aranceles)`;
+            }
             cInc.value = incText;
             cInc.font = {
               name: 'Calibri',
@@ -4222,7 +4256,7 @@ Los importes monetarios deben ser números decimales puros (sin símbolos €). 
               Number((inv.irpf || 0).toFixed(2)),
               Number((inv.total || 0).toFixed(2)),
               inv.fileName || "Manual",
-              inv.incidencias ? inv.incidencias.join('; ') : ""
+              inv.incidencias && inv.incidencias.length > 0 ? inv.incidencias.join('; ') : (inv.suplidos > 0 ? `✓ Cuadra (incluye ${formatMoney(inv.suplidos)} € suplidos)` : "✓ Sin incidencias")
             ]);
           });
           const wsFacturas = XLSX.utils.aoa_to_sheet(facturasData);
@@ -4283,6 +4317,7 @@ Los importes monetarios deben ser números decimales puros (sin símbolos €). 
           iva: inv.iva,
           irpf: inv.irpf,
           total: inv.total,
+          suplidos: inv.suplidos || 0,
           tipo: inv.tipo || 'P',
           tipoIvaPct: inv.tipoIvaPct
         }));
@@ -4298,7 +4333,7 @@ Los importes monetarios deben ser números decimales puros (sin símbolos €). 
         if (saved) {
           const loaded = JSON.parse(saved);
           if (Array.isArray(loaded)) {
-            appState.invoices = loaded.map(i => ({ ...i, tipo: i.tipo || 'P' }));
+            appState.invoices = loaded.map(i => ({ ...i, tipo: i.tipo || 'P', suplidos: i.suplidos || 0 }));
             reevaluarAuditoria();
           }
         }
