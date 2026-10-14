@@ -13,7 +13,11 @@
   - **PC / Escritorio**: Tabla compacta optimizada que aprovecha el 100% del ancho sin necesidad de desplazamientos laterales incómodos.
   - **Tablet y Teléfono**: Vista automática en **Tarjetas Inteligentes** que presentan toda la información fiscal, importes y botones adaptados a la pantalla vertical.
   - **Selector de Vista**: Alterna entre Vista de Tabla y Vista de Tarjetas con un solo clic.
-- **🤖 Extracción multimodal con Gemini API**: Arrastra PDFs o fotos de tickets; Gemini detecta proveedor, NIF/CIF, fecha, número y bases de impuestos.
+- **📑 Entrada Dual Flexible (Facturas Sueltas y Listados de Libro Mayor)**:
+  - **Modo Facturas y Tickets**: Procesa facturas individuales en PDF o imágenes extrayendo emisor, NIF/CIF, bases y cuotas de impuestos.
+  - **Modo Libro Mayor**: Importa directamente extractos contables oficiales (cuentas 472 de IVA Soportado y 477 de IVA Devengado/Repercutido); la aplicación desglosa cada asiento, calcula las bases imponibles automáticamente e integra todo en el modelo fiscal unificado.
+  - **Detección inteligente y selector interactivo**: El usuario puede elegir el modo con un clic o dejar que la app auto-detecte el tipo de documento.
+- **🤖 Extracción multimodal con Gemini API**: Arrastra PDFs o fotos de tickets/mayores; Gemini detecta proveedor, NIF/CIF, fecha, número y bases de impuestos.
 - **🔒 Privacidad total**: Tu API Key se guarda exclusivamente en tu navegador (`localStorage`) y viaja directa a los servidores de Google. Ningún dato ni documento pasa por servidores de terceros.
 - **⚖️ Auditoría Contable en Código (sin depender de la IA)**:
   - **Ecuación Contable**: Valida estrictamente que $\text{Base} + \text{IVA} - \text{IRPF} = \text{Total}$ al céntimo.

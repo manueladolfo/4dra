@@ -461,6 +461,55 @@
       font-family: 'JetBrains Mono', monospace;
     }
 
+    /* Selector de modo de entrada: Facturas sueltas vs Libros Mayores */
+    .upload-mode-nav {
+      display: inline-flex;
+      background: rgba(15, 23, 42, 0.7);
+      padding: 4px;
+      border-radius: 9999px;
+      border: 1px solid var(--border-subtle);
+      margin-bottom: 12px;
+      gap: 4px;
+    }
+    .upload-mode-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-secondary);
+      font-size: 0.82rem;
+      font-weight: 600;
+      padding: 6px 16px;
+      border-radius: 9999px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      transition: all 0.2s ease;
+    }
+    .upload-mode-btn:hover {
+      color: #ffffff;
+      background: rgba(255, 255, 255, 0.05);
+    }
+    .upload-mode-btn.active {
+      background: #2563eb;
+      color: #ffffff;
+      box-shadow: 0 2px 10px rgba(37, 99, 235, 0.4);
+    }
+    [data-theme="light"] .upload-mode-nav {
+      background: #f1f5f9;
+      border-color: #cbd5e1;
+    }
+    [data-theme="light"] .upload-mode-btn {
+      color: #64748b;
+    }
+    [data-theme="light"] .upload-mode-btn:hover {
+      color: #0f172a;
+      background: rgba(0, 0, 0, 0.04);
+    }
+    [data-theme="light"] .upload-mode-btn.active {
+      background: #2563eb;
+      color: #ffffff;
+    }
+
     /* Estilos pulidos y elegantes para Modo Claro */
     [data-theme="light"] .brand-text h1 .brand-name {
       background: linear-gradient(90deg, #0f172a 60%, #334155);
@@ -677,7 +726,7 @@
       border-spacing: 0;
       text-align: left;
       font-size: 0.82rem;
-      min-width: 1060px; /* Garantiza que los números NUNCA se corten */
+      min-width: 980px; /* Garantiza que los números NUNCA se corten */
     }
 
     thead {
@@ -689,7 +738,7 @@
     }
 
     th {
-      padding: 11px 8px;
+      padding: 10px 6px;
       font-size: 0.72rem;
       font-weight: 700;
       text-transform: uppercase;
@@ -708,40 +757,31 @@
       font-variant-numeric: tabular-nums;
     }
 
-    /* Columnas fijadas a la derecha para que el Total SIEMPRE esté visible */
+    /* Estilos limpios y naturales para las columnas de la tabla */
+    th.col-actions, td.col-actions {
+      text-align: center;
+      width: 36px;
+      min-width: 36px;
+      padding: 6px 2px;
+    }
+
+    th.col-tipo, td.col-tipo {
+      text-align: center;
+      width: 78px;
+      min-width: 78px;
+      padding: 6px 3px;
+    }
+
     th.col-total, td.col-total {
-      position: sticky;
-      right: 48px;
-      background: var(--bg-surface);
-      z-index: 4;
       text-align: right;
       font-weight: 800;
       font-size: 0.95rem;
       color: #60a5fa;
-      box-shadow: -6px 0 12px rgba(0, 0, 0, 0.22);
-      min-width: 120px;
-      padding-right: 12px;
+      min-width: 105px;
+      padding-right: 8px;
     }
     [data-theme="light"] th.col-total, [data-theme="light"] td.col-total {
       color: #2563eb;
-      box-shadow: -6px 0 12px rgba(0, 0, 0, 0.06);
-    }
-    thead th.col-total {
-      z-index: 15;
-    }
-
-    th.col-actions, td.col-actions {
-      position: sticky;
-      right: 0;
-      background: var(--bg-surface);
-      z-index: 4;
-      text-align: center;
-      width: 48px;
-      min-width: 48px;
-      padding: 8px 4px;
-    }
-    thead th.col-actions {
-      z-index: 15;
     }
 
     tbody tr {
@@ -758,12 +798,9 @@
     [data-theme="light"] tbody tr:hover {
       background-color: rgba(0, 0, 0, 0.02);
     }
-    tbody tr:hover td.col-total, tbody tr:hover td.col-actions {
-      background-color: var(--bg-surface-alt);
-    }
 
     td {
-      padding: 10px 8px;
+      padding: 8px 6px;
       color: var(--text-primary);
       vertical-align: middle;
       white-space: nowrap;
@@ -1067,57 +1104,208 @@
     }
 
     /* Pie de la tabla con totales - SIEMPRE ALINEADO A LA DERECHA */
+    /* Pie de la tabla con totales y liquidación fiscal de IVA */
     .table-footer {
-      padding: 16px 20px;
+      padding: 18px 24px;
       background: #111420;
       border-top: 1px solid var(--border-subtle);
       display: flex;
       flex-direction: column;
-      align-items: flex-end; /* Alineado a la derecha en cualquier pantalla */
-      text-align: right;
-      gap: 12px;
+      gap: 14px;
       width: 100%;
     }
 
     .footer-hint {
       color: var(--text-secondary);
-      font-size: 0.82rem;
-      text-align: right;
+      font-size: 0.80rem;
       display: flex;
       align-items: center;
-      justify-content: flex-end;
+      justify-content: flex-start;
       gap: 6px;
+      line-height: 1.4;
+      padding-bottom: 10px;
+      border-bottom: 1px dashed rgba(255, 255, 255, 0.08);
+    }
+    [data-theme="light"] .footer-hint {
+      border-bottom: 1px dashed rgba(0, 0, 0, 0.08);
+    }
+
+    .footer-blocks-wrapper {
+      display: grid;
+      grid-template-columns: 1fr auto 1.35fr;
+      align-items: stretch;
+      gap: 24px;
       width: 100%;
+    }
+
+    .footer-section {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .footer-section-totals {
+      justify-content: center;
+    }
+
+    .footer-section-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 0.74rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+    }
+
+    .fiscal-badge {
+      font-size: 0.68rem;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 9999px;
+      background: rgba(59, 130, 246, 0.15);
+      border: 1px solid rgba(59, 130, 246, 0.3);
+      color: #93c5fd;
+      letter-spacing: 0.02em;
+    }
+
+    .footer-divider {
+      width: 1px;
+      background: var(--border-subtle);
+      align-self: stretch;
     }
 
     .totals-summary {
       display: flex;
       align-items: center;
-      justify-content: flex-end; /* Alineado a la derecha */
-      gap: 24px;
+      gap: 20px;
       flex-wrap: wrap;
       font-family: 'JetBrains Mono', monospace;
-      width: 100%;
     }
+
+    .footer-section-totals .totals-summary {
+      justify-content: flex-start;
+    }
+
+    .footer-section-tax {
+      background: rgba(15, 23, 42, 0.4);
+      padding: 12px 16px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-subtle);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+    [data-theme="light"] .footer-section-tax {
+      background: #f8fafc;
+      border-color: #e2e8f0;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    }
+
+    .tax-summary {
+      justify-content: space-between;
+    }
+
     .total-item {
       display: flex;
       flex-direction: column;
-      align-items: flex-end; /* Alineado a la derecha */
-      text-align: right;
       gap: 2px;
     }
+
     .total-item span:first-child {
-      font-size: 0.72rem;
+      font-size: 0.70rem;
       color: var(--text-muted);
       text-transform: uppercase;
       font-family: 'Plus Jakarta Sans', sans-serif;
       font-weight: 600;
       letter-spacing: 0.04em;
+      display: flex;
+      align-items: center;
+      gap: 5px;
     }
+
     .total-item span:last-child {
       font-weight: 800;
       color: #ffffff;
-      font-size: 1.15rem;
+      font-size: 1.12rem;
+    }
+    [data-theme="light"] .total-item span:last-child {
+      color: #0f172a;
+    }
+
+    .tag-c, .tag-p {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 17px;
+      height: 17px;
+      border-radius: 4px;
+      font-size: 0.65rem;
+      font-weight: 800;
+    }
+    .tag-c {
+      background: rgba(16, 185, 129, 0.2);
+      color: #34d399;
+      border: 1px solid rgba(16, 185, 129, 0.4);
+    }
+    .tag-p {
+      background: rgba(59, 130, 246, 0.2);
+      color: #60a5fa;
+      border: 1px solid rgba(59, 130, 246, 0.4);
+    }
+
+    .tax-item-hint {
+      font-size: 0.66rem;
+      color: var(--text-muted);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-weight: 500;
+    }
+
+    .highlight-tax {
+      padding: 6px 14px;
+      border-radius: var(--radius-sm);
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      min-width: 170px;
+    }
+    [data-theme="light"] .highlight-tax {
+      background: #ffffff;
+      border-color: #cbd5e1;
+    }
+
+    .tax-badge-state {
+      font-size: 0.68rem;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-weight: 600;
+      margin-top: 2px;
+      padding: 1px 6px;
+      border-radius: 4px;
+      display: inline-block;
+      width: fit-content;
+    }
+    .badge-pagar {
+      background: rgba(245, 158, 11, 0.15);
+      color: #fbbf24;
+      border: 1px solid rgba(245, 158, 11, 0.3);
+    }
+    .badge-devolver {
+      background: rgba(16, 185, 129, 0.15);
+      color: #34d399;
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+    .badge-neutral {
+      background: rgba(148, 163, 184, 0.15);
+      color: #94a3b8;
+      border: 1px solid rgba(148, 163, 184, 0.3);
+    }
+
+    @media (max-width: 1200px) {
+      .footer-blocks-wrapper {
+        grid-template-columns: 1fr;
+        gap: 16px;
+      }
+      .footer-divider {
+        display: none;
+      }
     }
 
     /* Reglas de pantalla para Tablets y Móviles (100% Automático) */
@@ -1573,6 +1761,20 @@
       </div>
     </div>
 
+    <!-- Selector de Modo de Entrada (Facturas sueltas o Listados de Libro Mayor) -->
+    <div style="display: flex; justify-content: center; width: 100%;">
+      <div class="upload-mode-nav">
+        <button class="upload-mode-btn active" id="mode-btn-invoices" onclick="setUploadMode('invoices')" title="Adjuntar facturas o tickets sueltos">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+          <span>Facturas y Tickets</span>
+        </button>
+        <button class="upload-mode-btn" id="mode-btn-ledger" onclick="setUploadMode('ledger')" title="Adjuntar listados o extractos de Libro Mayor (Cuentas 472/477)">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path><line x1="9" y1="7" x2="16" y2="7"></line><line x1="9" y1="11" x2="16" y2="11"></line></svg>
+          <span>Libro Mayor (Extractos Contables)</span>
+        </button>
+      </div>
+    </div>
+
     <!-- Zona Drag & Drop -->
     <div class="upload-zone" id="upload-zone" onclick="triggerFileInput()">
       <input type="file" id="file-input" multiple accept="application/pdf,image/jpeg,image/png,image/webp" onchange="handleFileSelect(event)">
@@ -1584,15 +1786,16 @@
             <line x1="12" y1="3" x2="12" y2="15"></line>
           </svg>
         </div>
-        <div class="upload-title">Arrastra aquí tus facturas en PDF o fotos de tickets</div>
-        <div class="upload-subtitle">
+        <div class="upload-title" id="upload-title-text">Arrastra aquí tus facturas en PDF o fotos de tickets</div>
+        <div class="upload-subtitle" id="upload-subtitle-text">
           Gemini extraerá los datos automáticamente y el motor de código revisará al vuelo que las cuentas cuadren al céntimo.
         </div>
-        <div class="upload-tags">
+        <div class="upload-tags" id="upload-tags-container">
           <span class="upload-tag">PDF</span>
           <span class="upload-tag">JPG</span>
           <span class="upload-tag">PNG</span>
           <span class="upload-tag">Multi-archivo</span>
+          <span class="upload-tag" style="color: #60a5fa; border-color: rgba(96, 165, 250, 0.3);">Auto-detección</span>
         </div>
       </div>
     </div>
@@ -1601,7 +1804,7 @@
     <div class="processing-bar-container" id="processing-bar">
       <div class="processing-info">
         <div class="spinner"></div>
-        <span id="processing-text">Analizando facturas con Gemini...</span>
+        <span id="processing-text">Analizando documentos con Gemini...</span>
       </div>
       <span id="processing-count" style="font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; color: var(--text-secondary);">0/0</span>
     </div>
@@ -1625,9 +1828,13 @@
       </button>
 
       <div class="btn-aux-group">
-        <button class="btn btn-ghost" onclick="loadSampleInvoice()" title="Probar con facturas de ejemplo">
+        <button class="btn btn-ghost" onclick="loadSampleInvoice()" title="Probar con facturas sueltas de ejemplo">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
-          Cargar demo
+          Demo Facturas
+        </button>
+        <button class="btn btn-ghost" onclick="loadSampleLedger()" style="color: #60a5fa;" title="Probar con listados reales de Libro Mayor (Cuentas 472 y 477)">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+          Demo Libro Mayor
         </button>
         <button class="btn btn-danger-ghost" onclick="clearAllData()" title="Limpiar todas las facturas">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
@@ -1663,18 +1870,18 @@
         <table id="invoices-table">
           <thead>
             <tr>
-              <th style="min-width: 125px;">Estado</th>
-              <th style="min-width: 125px;">Doc. Original</th>
-              <th style="min-width: 200px;">Proveedor / Cliente</th>
-              <th style="min-width: 110px;">NIF / CIF</th>
-              <th style="min-width: 105px;">Fecha</th>
-              <th style="min-width: 115px;">Número</th>
-              <th class="num" style="min-width: 105px;">Base (€)</th>
-              <th class="num" style="min-width: 95px;">IVA (€)</th>
-              <th class="num" style="min-width: 95px;">IRPF (€)</th>
-              <th class="num col-total" style="min-width: 125px;">Total (€)</th>
-              <th style="min-width: 80px; text-align: center;" title="Tipo de IVA: (P) Proveedor / Soportado o (C) Cliente / Repercutido">Tipo (P/C)</th>
-              <th class="col-actions" style="width: 48px; text-align: center;">✕</th>
+              <th style="min-width: 90px;">Estado</th>
+              <th style="min-width: 100px;">Doc. Original</th>
+              <th style="min-width: 150px;">Proveedor / Cliente</th>
+              <th style="min-width: 90px;">NIF / CIF</th>
+              <th style="min-width: 85px;">Fecha</th>
+              <th style="min-width: 85px;">Número</th>
+              <th class="num" style="min-width: 85px;">Base (€)</th>
+              <th class="num" style="min-width: 75px;">IVA (€)</th>
+              <th class="num" style="min-width: 75px;">IRPF (€)</th>
+              <th class="num col-total" style="min-width: 95px;">Total (€)</th>
+              <th class="col-tipo" style="min-width: 76px; text-align: center;" title="Tipo de IVA: (P) Proveedor / Soportado o (C) Cliente / Repercutido">Tipo (P/C)</th>
+              <th class="col-actions" style="width: 34px; text-align: center;">✕</th>
             </tr>
           </thead>
           <tbody id="invoices-tbody">
@@ -1702,27 +1909,68 @@
         </div>
       </div>
 
-      <!-- Pie de tabla con totales alineados a la derecha -->
+      <!-- Pie de tabla con totales y liquidación fiscal de IVA en tiempo real -->
       <div class="table-footer">
         <div class="footer-hint">
-          💡 Puedes hacer <strong>clic o doble clic en cualquier celda</strong> para editarla. Las cuentas se recalcularán al vuelo.
+          💡 Las casillas <strong>P / C</strong> diferencian el IVA: <strong>C</strong> (Cliente / Venta = IVA a pagar a Hacienda) y <strong>P</strong> (Proveedor / Gasto = IVA deducible). Haz clic en <strong>P</strong> o <strong>C</strong> o edita cualquier celda para recalcular la liquidación al vuelo.
         </div>
-        <div class="totals-summary">
-          <div class="total-item">
-            <span>Base Imponible</span>
-            <span id="footer-sum-base">0,00 €</span>
+
+        <div class="footer-blocks-wrapper">
+          <!-- BLOQUE 1: TOTALES GLOBALES DE LAS FACTURAS LISTADAS -->
+          <div class="footer-section footer-section-totals">
+            <div class="footer-section-title">
+              <span>Totales Facturados (Facturas Listadas)</span>
+            </div>
+            <div class="totals-summary">
+              <div class="total-item">
+                <span>Base Imponible</span>
+                <span id="footer-sum-base">0,00 €</span>
+              </div>
+              <div class="total-item">
+                <span>Total IVA</span>
+                <span id="footer-sum-iva">0,00 €</span>
+              </div>
+              <div class="total-item">
+                <span>Total IRPF</span>
+                <span id="footer-sum-irpf">0,00 €</span>
+              </div>
+              <div class="total-item highlight">
+                <span>Total Facturado</span>
+                <span id="footer-sum-total" style="color: #60a5fa;">0,00 €</span>
+              </div>
+            </div>
+            <!-- Sub-detalle de cánones / conceptos no sujetos a IVA si los hay -->
+            <div id="footer-canones-detail" style="display: none; font-size: 0.73rem; color: #94a3b8; font-family: 'JetBrains Mono', monospace; margin-top: 4px;">
+              <span>ℹ️ Incluye cánones / tasas exentas de IVA: </span><strong id="footer-sum-suplidos" style="color: #38bdf8;">0,00 €</strong>
+            </div>
           </div>
-          <div class="total-item">
-            <span>Total IVA</span>
-            <span id="footer-sum-iva">0,00 €</span>
-          </div>
-          <div class="total-item">
-            <span>Total IRPF</span>
-            <span id="footer-sum-irpf">0,00 €</span>
-          </div>
-          <div class="total-item highlight">
-            <span>Total Facturado</span>
-            <span id="footer-sum-total" style="color: #60a5fa;">0,00 €</span>
+
+          <!-- DIVISOR VERTICAL -->
+          <div class="footer-divider"></div>
+
+          <!-- BLOQUE 2: LIQUIDACIÓN FISCAL DE IVA (REPERCUTIDO VS SOPORTADO) -->
+          <div class="footer-section footer-section-tax">
+            <div class="footer-section-title">
+              <span>Liquidación IVA (Repercutido vs Soportado)</span>
+              <span class="fiscal-badge" id="footer-fiscal-badge">Modelo 303 en directo</span>
+            </div>
+            <div class="totals-summary tax-summary">
+              <div class="total-item total-item-rep">
+                <span><span class="tag-c">C</span> IVA Repercutido</span>
+                <span id="footer-iva-repercutido" style="color: #34d399;">0,00 €</span>
+                <small class="tax-item-hint">Ventas · A ingresar</small>
+              </div>
+              <div class="total-item total-item-sop">
+                <span><span class="tag-p">P</span> IVA Soportado</span>
+                <span id="footer-iva-soportado" style="color: #60a5fa;">0,00 €</span>
+                <small class="tax-item-hint">Gastos · Deducible</small>
+              </div>
+              <div class="total-item highlight-tax" id="footer-iva-result-box">
+                <span id="footer-iva-result-label">Resultado Liquidación</span>
+                <span id="footer-iva-result-val">0,00 €</span>
+                <small id="footer-iva-result-state" class="tax-badge-state badge-neutral">Liquidación compensada</small>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -1751,8 +1999,9 @@
         <div class="form-group">
           <label for="select-model">Modelo de Gemini</label>
           <select id="select-model" class="form-control" style="width: 100%;">
+            <option value="gemini-2.5-flash">Gemini 2.5 Flash (Última generación - Máxima precisión)</option>
             <option value="gemini-2.0-flash">Gemini 2.0 Flash (Recomendado - Muy rápido)</option>
-            <option value="gemini-1.5-flash">Gemini 1.5 Flash (Máxima compatibilidad)</option>
+            <option value="gemini-1.5-flash">Gemini 1.5 Flash (Compatibilidad amplia)</option>
             <option value="gemini-1.5-pro">Gemini 1.5 Pro (Razonamiento complejo)</option>
             <option value="gemini-1.5-flash-8b">Gemini 1.5 Flash 8B (Económico)</option>
           </select>
@@ -1817,8 +2066,47 @@
       model: savedModel,
       invoices: [],
       currentFilter: 'ALL',
-      isProcessing: false
+      isProcessing: false,
+      uploadMode: 'invoices' // 'invoices' | 'ledger'
     };
+
+    function setUploadMode(mode) {
+      appState.uploadMode = mode;
+      const btnInvoices = document.getElementById('mode-btn-invoices');
+      const btnLedger = document.getElementById('mode-btn-ledger');
+      const titleText = document.getElementById('upload-title-text');
+      const subText = document.getElementById('upload-subtitle-text');
+      const tagsContainer = document.getElementById('upload-tags-container');
+
+      if (mode === 'ledger') {
+        if (btnInvoices) btnInvoices.classList.remove('active');
+        if (btnLedger) btnLedger.classList.add('active');
+        if (titleText) titleText.textContent = 'Arrastra aquí tus listados de Libro Mayor (Cuentas 472 / 477)';
+        if (subText) subText.innerHTML = 'Gemini extraerá <strong>todas las líneas contables</strong> (IVA soportado o devengado), calculará sus bases imponibles y conciliará los totales automáticamente.';
+        if (tagsContainer) {
+          tagsContainer.innerHTML = `
+            <span class="upload-tag">PDF Mayor</span>
+            <span class="upload-tag">Cuentas 472 / 477</span>
+            <span class="upload-tag">Multi-página</span>
+            <span class="upload-tag" style="color: #60a5fa; border-color: rgba(96, 165, 250, 0.3);">Desglose Tabular</span>
+          `;
+        }
+      } else {
+        if (btnInvoices) btnInvoices.classList.add('active');
+        if (btnLedger) btnLedger.classList.remove('active');
+        if (titleText) titleText.textContent = 'Arrastra aquí tus facturas en PDF o fotos de tickets';
+        if (subText) subText.textContent = 'Gemini extraerá los datos automáticamente y el motor de código revisará al vuelo que las cuentas cuadren al céntimo.';
+        if (tagsContainer) {
+          tagsContainer.innerHTML = `
+            <span class="upload-tag">PDF</span>
+            <span class="upload-tag">JPG</span>
+            <span class="upload-tag">PNG</span>
+            <span class="upload-tag">Multi-archivo</span>
+            <span class="upload-tag" style="color: #60a5fa; border-color: rgba(96, 165, 250, 0.3);">Auto-detección</span>
+          `;
+        }
+      }
+    }
 
     /* ==========================================================================
        INICIALIZACIÓN AL CARGAR LA PÁGINA
@@ -1951,7 +2239,7 @@
 
         // Buscar entre los modelos disponibles el mejor candidato
         const modelNames = availableModels.map(m => m.name.replace(/^models\//, ''));
-        const priorityOrder = ['gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-1.5-flash-8b', 'gemini-1.5-pro'];
+        const priorityOrder = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-1.5-flash-8b', 'gemini-1.5-pro'];
         
         const sortedModels = [
           ...priorityOrder.filter(p => modelNames.includes(p)),
@@ -2364,17 +2652,28 @@
       const cuadraSinIrpf = irpf > 0 && Math.abs(sumaSinIrpf - total) <= 0.05;
       const cuadraSinIrpfConSuplidos = irpf > 0 && suplidos > 0 && Math.abs(redondearFiscal(base + iva + suplidos) - total) <= 0.05;
 
-      // Detección automática en facturas notariales, registrales o de gestorías:
-      // Si la diferencia positiva entre Total y (Base + IVA - IRPF) coincide con el descuadre y el emisor tiene indicios notariales/arancelarios
+      // Detección automática en suministros (agua, luz, gas, telecomunicaciones), notarías o facturas con cánones/tasas:
+      // Si la diferencia positiva entre Total y (Base + IVA - IRPF) coincide con el descuadre y existen indicios de canon/suministro/arancel o coherencia de tipo de IVA
       let suplidosDetectados = suplidos;
       let cuadraConSuplidosAuto = false;
       if (!cuadraConTolerancia && !cuadraConSuplidosExplicito && !cuadraSinIrpf && !cuadraSinIrpfConSuplidos) {
         const diffDirecta = redondearFiscal(total - sumaCalculada);
-        const esProfesionalAranceles = /notar|registr|gestor|procurad|colegio|arancel|abogad|minuta/i.test(provEmisor + ' ' + (row.fileName || ''));
-        if (diffDirecta > 0 && (esProfesionalAranceles || (row.desgloseLineas && row.desgloseLineas.length > 0))) {
-          suplidosDetectados = diffDirecta;
-          cuadraConSuplidosAuto = true;
-          row.suplidos = suplidosDetectados; // Asociar internamente para persistencia
+        if (diffDirecta > 0.05) {
+          // 1. Detectar si el emisor o archivo es de suministros (agua, energía, gas, telecomunicaciones, etc.) o notarías/gestorías
+          const esSuministroOArancel = /notar|registr|gestor|procurad|colegio|arancel|abogad|minuta|agua|emasa|canal|aqualia|hidra|aemet|endesa|iberdrola|naturgy|telefonica|vodafone|orange|electric|gas|suministr|canon|tasa|tribut|depura|sanea|residu/i.test(provEmisor + ' ' + (row.fileName || ''));
+          
+          // 2. Comprobar si la Base y el IVA guardan coherencia matemática estricta con tipos oficiales (21%, 10%, 4%, 5%)
+          let coincideTipoOficial = false;
+          if (base > 0 && iva > 0) {
+            const pct = (iva / base) * 100;
+            coincideTipoOficial = [21, 10, 4, 5].some(t => Math.abs(pct - t) < 0.9);
+          }
+
+          if (esSuministroOArancel || coincideTipoOficial || (row.desgloseLineas && row.desgloseLineas.length > 0)) {
+            suplidosDetectados = diffDirecta;
+            cuadraConSuplidosAuto = true;
+            row.suplidos = suplidosDetectados; // Asociar internamente para persistencia
+          }
         }
       }
 
@@ -2383,10 +2682,20 @@
 
       // 3. Validación de Identificador Fiscal (NIF/CIF/NIE)
       let nifAdvertencia = false;
-      const valNif = validarIdentificadorFiscal(row.nif);
-      if (!valNif.valido) {
-        nifAdvertencia = true;
-        incidencias.push(`NIF no validado (${valNif.razon})`);
+      if (row.esLibroMayor) {
+        // En extractos de libro mayor la contrapartida contable suele ser una cuenta (ej: 4300014, 4100015)
+        if (row.nif && !/^\d{5,8}$/.test(row.nif)) {
+          const valNif = validarIdentificadorFiscal(row.nif);
+          if (!valNif.valido) {
+            incidencias.push(`NIF no validado (${valNif.razon})`);
+          }
+        }
+      } else {
+        const valNif = validarIdentificadorFiscal(row.nif);
+        if (!valNif.valido) {
+          nifAdvertencia = true;
+          incidencias.push(`NIF no validado (${valNif.razon})`);
+        }
       }
 
       // 4. Validación de Fecha
@@ -2408,8 +2717,11 @@
       }
 
       // 6. Campos mínimos obligatorios
-      if (!row.numero || !row.proveedor) {
-        incidencias.push('Falta número de factura o nombre de proveedor');
+      if (!row.numero && !row.asiento) {
+        incidencias.push('Falta número de factura o asiento contable');
+      }
+      if (!row.proveedor) {
+        incidencias.push('Falta concepto o identificación de emisor');
       }
 
       // 7. Determinación del Estado y Mensaje para el Hover / Tooltip
@@ -2445,7 +2757,7 @@
       // Cuentas y datos 100% correctos
       let msgCuadra = 'Correcto: la suma de base + IVA - IRPF cuadra con el total y los datos fiscales son válidos';
       if (tieneSuplidos) {
-        msgCuadra = `Correcto: cuentas cuadradas (incluye ${formatMoney(suplidosDetectados)} € de suplidos/aranceles exentos de IVA e IRPF)`;
+        msgCuadra = `Correcto: cuentas cuadradas (incluye ${formatMoney(suplidosDetectados)} € en cánones de suministro, tasas o suplidos exentos de IVA)`;
       } else if (diferencia > 0.005) {
         msgCuadra = `Correcto: cuentas cuadradas con ajuste de redondeo de ${diferencia.toFixed(2)} € en el total`;
       }
@@ -2514,10 +2826,114 @@
           const base64Data = await readFileAsBase64(file);
           const previewUrl = URL.createObjectURL(file);
 
-          // 2. Extraer datos estructurados con Gemini API
+          // 2. Detección de tipo de documento:
+          // Si el usuario eligió modo 'ledger' o el nombre indica libro mayor / extracto contable
+          const isLedgerByName = /mayor|extracto|diario|subcuenta|472|477|asiento|contab/i.test(file.name || '');
+          const treatAsLedger = (appState.uploadMode === 'ledger') || isLedgerByName;
+
+          if (treatAsLedger) {
+            processingText.textContent = `Extrayendo Libro Mayor de «${file.name}»...`;
+            const ledgerResult = await callGeminiExtractLedger(file, base64Data);
+            
+            // Si devolvió filas de libro mayor
+            if (ledgerResult.lineas && ledgerResult.lineas.length > 0) {
+              const metaEmpresa = ledgerResult.empresa || '';
+              const metaSubcuenta = ledgerResult.subcuenta || '';
+
+              for (const linea of ledgerResult.lineas) {
+                // Cálculo de base imponible si viene solo cuota de IVA
+                let cuotaIva = redondearFiscal(linea.iva || linea.haber || linea.debe || 0);
+                let tipoIvaPct = linea.tipo_iva_pct || (metaSubcuenta.includes('10') ? 10 : (metaSubcuenta.includes('4') ? 4 : 21));
+                
+                let baseCalc = linea.base ? redondearFiscal(linea.base) : 0;
+                if (!baseCalc && cuotaIva > 0 && tipoIvaPct > 0) {
+                  baseCalc = redondearFiscal(cuotaIva / (tipoIvaPct / 100));
+                }
+
+                let totalCalc = linea.total ? redondearFiscal(linea.total) : redondearFiscal(baseCalc + cuotaIva);
+                let tipoPC = linea.tipo === 'C' ? 'C' : 'P';
+                if (!linea.tipo) {
+                  // Si es subcuenta 477 (IVA Devengado / Repercutido) -> C
+                  // Si es subcuenta 472 (IVA Soportado) -> P
+                  if (metaSubcuenta.startsWith('477') || /deveng|repercut/i.test(metaSubcuenta)) {
+                    tipoPC = 'C';
+                  } else {
+                    tipoPC = 'P';
+                  }
+                }
+
+                const newRow = {
+                  id: 'inv_lm_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5),
+                  fileName: file.name,
+                  fileType: file.type,
+                  fileUrl: previewUrl,
+                  fileBase64: base64Data,
+                  proveedor: linea.proveedor || linea.concepto || (metaEmpresa ? `Mayor ${metaEmpresa}` : 'Asiento Mayor'),
+                  nif: cleanNif(linea.nif || linea.contrapartida || ''),
+                  fecha: formatDateString(linea.fecha),
+                  numero: linea.numero || (linea.asiento ? `Asiento ${linea.asiento}` : ''),
+                  base: baseCalc,
+                  iva: cuotaIva,
+                  irpf: 0,
+                  total: totalCalc,
+                  suplidos: 0,
+                  tipo: tipoPC,
+                  tipoIvaPct: tipoIvaPct,
+                  desgloseLineas: [],
+                  esLibroMayor: true,
+                  subcuenta: metaSubcuenta,
+                  asiento: linea.asiento || ''
+                };
+                appState.invoices.push(newRow);
+              }
+              exitosos++;
+              continue;
+            }
+          }
+
+          // 3. Extracción de factura individual estándar
           const extractedData = await callGeminiExtractInvoice(file, base64Data);
 
-          // 3. Crear registro de factura
+          // Si el documento resultó ser un libro mayor aunque no viniese seleccionado
+          if (extractedData.es_libro_mayor && extractedData.lineas && extractedData.lineas.length > 0) {
+            const metaEmpresa = extractedData.empresa || '';
+            const metaSubcuenta = extractedData.subcuenta || '';
+
+            for (const linea of extractedData.lineas) {
+              let cuotaIva = redondearFiscal(linea.iva || linea.haber || linea.debe || 0);
+              let tipoIvaPct = linea.tipo_iva_pct || (metaSubcuenta.includes('10') ? 10 : 21);
+              let baseCalc = linea.base ? redondearFiscal(linea.base) : redondearFiscal(cuotaIva / (tipoIvaPct / 100));
+              let totalCalc = linea.total ? redondearFiscal(linea.total) : redondearFiscal(baseCalc + cuotaIva);
+              let tipoPC = (metaSubcuenta.startsWith('477') || linea.tipo === 'C') ? 'C' : 'P';
+
+              const newRow = {
+                id: 'inv_lm_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5),
+                fileName: file.name,
+                fileType: file.type,
+                fileUrl: previewUrl,
+                fileBase64: base64Data,
+                proveedor: linea.proveedor || linea.concepto || 'Asiento Mayor',
+                nif: cleanNif(linea.nif || linea.contrapartida || ''),
+                fecha: formatDateString(linea.fecha),
+                numero: linea.numero || (linea.asiento ? `Asiento ${linea.asiento}` : ''),
+                base: baseCalc,
+                iva: cuotaIva,
+                irpf: 0,
+                total: totalCalc,
+                suplidos: 0,
+                tipo: tipoPC,
+                tipoIvaPct: tipoIvaPct,
+                desgloseLineas: [],
+                esLibroMayor: true,
+                subcuenta: metaSubcuenta
+              };
+              appState.invoices.push(newRow);
+            }
+            exitosos++;
+            continue;
+          }
+
+          // Crear registro de factura individual
           const newInvoice = {
             id: 'inv_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5),
             fileName: file.name,
@@ -2551,7 +2967,7 @@
 
       reevaluarAuditoria();
       if (exitosos > 0) {
-        showToast(`Se han procesado ${exitosos} documento(s) correctamente`, 'success');
+        showToast(`Se han procesado ${exitosos} documento(s) correctamente (${appState.invoices.length} registros totales)`, 'success');
       }
     }
 
@@ -2580,44 +2996,52 @@
       // Lista priorizada de modelos para fallback
       const modelsToTry = [...new Set([
         activeModel,
-        'gemini-1.5-flash',
+        'gemini-2.5-flash',
         'gemini-2.0-flash',
+        'gemini-1.5-flash',
         'gemini-1.5-flash-8b',
         'gemini-1.5-pro'
       ])];
 
-      const cleanMime = file.type || (file.name.toLowerCase().endsWith('.pdf') ? 'application/pdf' : 'image/jpeg');
+      let cleanMime = file.type;
+      if (!cleanMime || cleanMime === 'application/octet-stream') {
+        const lowerName = (file.name || '').toLowerCase();
+        if (lowerName.endsWith('.pdf')) cleanMime = 'application/pdf';
+        else if (lowerName.endsWith('.png')) cleanMime = 'image/png';
+        else if (lowerName.endsWith('.webp')) cleanMime = 'image/webp';
+        else cleanMime = 'image/jpeg';
+      }
       const cleanBase64 = base64Data.replace(/\s/g, '');
 
       const prompt = `Eres un experto contable español de máxima precisión. Analiza esta factura o ticket de compra y extrae sus datos fiscales obligatorios.
 
 REGLAS OBLIGATORIAS DE EXTRACCIÓN:
-1. "proveedor" y "nif": Extrae SIEMPRE los datos de la empresa o profesional EMISOR (quien expide y cobra la factura, que suele figurar arriba o junto a la palabra FACTURA con su CIF/NIF). NUNCA extraigas los datos del cliente, arrendatario o receptor de la factura.
-2. "numero": Número o código de la factura (ej: "A 04", "FAC-2026-001", etc.).
+1. "proveedor" y "nif": Extrae SIEMPRE los datos de la empresa o entidad EMISORA (quien expide y cobra la factura). En suministros (agua, luz, gas, telecomunicaciones, ej: EMASA, Endesa, Iberdrola, Naturgy, Telefónica), el emisor es la compañía suministradora (ej: "Empresa Municipal Aguas de Málaga S.A." con CIF "A29185519"), NUNCA el titular del suministro o abonado (que es el cliente receptor).
+2. "numero": Número o código de la factura (ej: "2026EMFF1825624", "FAC-2026-001", etc.).
 3. "fecha": Fecha de emisión de la factura en formato YYYY-MM-DD.
-4. "base": Base imponible total (suma de importes antes de impuestos).
-5. "iva": Cuota total de IVA en euros.
-6. "tipo_iva_pct": Tipo de IVA aplicado (ej: 21, 10, 4, etc.).
-7. "irpf": Si la factura incluye RETENCIÓN o IRPF (muy habitual en alquileres con 19% o profesionales con 15%), extrae el importe positivo en euros (ej: si indica "RETENCION 19 % -204,13 €", pon irpf: 204.13). Si no hay retención, pon 0.
-8. "total": Importe final a pagar / LÍQUIDO A PAGAR (tras sumar IVA, restar retención y sumar suplidos si los hay). Si figura "LÍQUIDO A PAGAR" o "TOTAL FACTURA", ese es el total exacto.
-9. "suplidos": Si la factura es de un notario, registrador o gestoría e incluye SUPLIDOS o conceptos exentos de IVA e IRPF (como "Desglose Suplidos", "Norma 8ª", "Suplidos y Derechos", etc.), extrae el importe positivo en euros (ej: 3.30). Si no hay suplidos, pon 0.
-10. "tipo": Clasifica la factura: si es un gasto/compra recibido de un proveedor, indica "P". Si es un ingreso/venta emitido por nosotros a un cliente, indica "C". En caso de duda o por defecto, usa "P".
+4. "base": Base Imponible sujeta a IVA (importe sujeto a gravamen sobre el que se calcula la cuota de IVA). Si hay cánones o tasas exentas/no sujetas (ej. canon del agua o depuración), NO los sumes a la base gravada por IVA para no alterar el porcentaje impositivo; extrae aquí la base imponible pura sujeta a IVA (ej: en agua 123.35).
+5. "iva": Cuota total de IVA en euros (ej: 12.34).
+6. "tipo_iva_pct": Tipo de IVA aplicado sobre la base (ej: 21, 10, 4, etc.).
+7. "irpf": Si la factura incluye RETENCIÓN o IRPF (habitual en alquileres con 19% o profesionales con 15%), extrae el importe positivo en euros. Si no hay retención, pon 0.
+8. "total": Importe final a pagar / TOTAL FACTURA o Líquido a pagar impreso exacto (ej: 149.55).
+9. "suplidos": Cánones públicos (como "Canon autonómico de depuración", "Canon de saneamiento", "Canon del agua", tasas de residuos), conceptos no sujetos o exentos de IVA, o suplidos notariales/registrales que forman parte del total pero no devengan IVA ni IRPF (ej: 13.86). Si no hay suplidos ni cánones, pon 0.
+10. "tipo": Clasifica la factura: "P" si es un gasto/compra recibido de un proveedor (incluyendo suministros de agua, energía, servicios); "C" si es un ingreso/venta emitido por nosotros a un cliente.
 
-Devuelve ÚNICAMENTE un objeto JSON puro (sin formato markdown):
+Devuelve ÚNICAMENTE un objeto JSON puro (sin formato markdown ni texto adicional):
 {
   "proveedor": "Nombre del emisor",
   "nif": "CIF o NIF del emisor",
   "fecha": "YYYY-MM-DD",
   "numero": "Número de factura",
-  "base": 1074.38,
-  "iva": 225.62,
-  "tipo_iva_pct": 21,
+  "base": 123.35,
+  "iva": 12.34,
+  "tipo_iva_pct": 10,
   "tipo": "P",
-  "irpf": 204.13,
-  "suplidos": 0.00,
-  "total": 1095.90
+  "irpf": 0.00,
+  "suplidos": 13.86,
+  "total": 149.55
 }
-Los importes monetarios deben ser números decimales puros (sin símbolos €). Si un dato no existe, usa 0 o cadena vacía.`;
+Los importes monetarios deben ser números decimales puros con punto decimal (sin símbolos €). Si un dato numérico no existe, usa 0.`;
 
       const requestBody = {
         contents: [
@@ -2697,17 +3121,218 @@ Los importes monetarios deben ser números decimales puros (sin símbolos €). 
 
     function parseJsonFromText(rawText) {
       if (!rawText) return {};
-      const clean = rawText.replace(/```json/gi, '').replace(/```/g, '').trim();
+      // 1. Quitar bloques de código markdown
+      let clean = rawText.replace(/```json/gi, '').replace(/```/g, '').trim();
+      
+      // 2. Localizar inicio y fin del objeto JSON
       const start = clean.indexOf('{');
       const end = clean.lastIndexOf('}');
       if (start !== -1 && end !== -1) {
+        clean = clean.substring(start, end + 1);
+      }
+
+      // 3. Limpiar comentarios // y /* ... */
+      clean = clean.replace(/\/\/.*$/gm, '').replace(/\/\*[\s\S]*?\*\//g, '');
+
+      // 4. Limpiar comas finales (trailing commas) antes de } o ]
+      clean = clean.replace(/,\s*([}\]])/g, '$1');
+
+      // 5. Corregir números con coma decimal europea (ej: "base": 123,35,)
+      clean = clean.replace(/:\s*(\d+),(\d{1,4})\s*([,\n\r}])/g, ': $1.$2$3');
+
+      try {
+        return JSON.parse(clean);
+      } catch (e) {
+        console.warn('Fallo parseo JSON directo, activando extractor tolerante por Regex:', e);
+      }
+
+      // 6. Extractor de respaldo resiliente por Regex
+      const extractField = (name, isNum = false) => {
+        const regexStr = new RegExp(`"${name}"\\s*:\\s*(?:"([^"]*)"|(-?[\\d.,]+)|([a-zA-Z]+))`, 'i');
+        const match = clean.match(regexStr);
+        if (!match) return isNum ? 0 : '';
+        const val = match[1] !== undefined ? match[1] : (match[2] !== undefined ? match[2] : match[3]);
+        if (isNum) {
+          const numClean = String(val).replace(/€/g, '').replace(/\s/g, '').replace(/,/g, '.');
+          const n = parseFloat(numClean);
+          return isNaN(n) ? 0 : n;
+        }
+        return String(val).trim();
+      };
+
+      return {
+        proveedor: extractField('proveedor'),
+        nif: extractField('nif'),
+        fecha: extractField('fecha'),
+        numero: extractField('numero'),
+        base: extractField('base', true),
+        iva: extractField('iva', true),
+        tipo_iva_pct: extractField('tipo_iva_pct', true) || 21,
+        irpf: extractField('irpf', true),
+        suplidos: extractField('suplidos', true),
+        total: extractField('total', true),
+        tipo: extractField('tipo').toUpperCase() === 'C' ? 'C' : 'P'
+      };
+    }
+
+    /* ==========================================================================
+       EXTRACCIÓN ESPECIALIZADA DE LIBROS MAYORES / LISTADOS CONTABLES CON GEMINI
+       ========================================================================== */
+    async function callGeminiExtractLedger(file, base64Data) {
+      const apiKey = sanitizeApiKey(appState.apiKey);
+      if (!apiKey) {
+        throw new Error('No hay clave de API configurada. Abre «Configurar Gemini API» y pulsa «Diagnosticar Clave».');
+      }
+
+      const activeModel = (appState.model || 'gemini-1.5-flash').replace(/[‐-―]/g, '-').replace(/^models\//, '').trim();
+      const modelsToTry = [...new Set([
+        activeModel,
+        'gemini-2.5-flash',
+        'gemini-2.0-flash',
+        'gemini-1.5-flash',
+        'gemini-1.5-flash-8b',
+        'gemini-1.5-pro'
+      ])];
+
+      let cleanMime = file.type || 'application/pdf';
+      if (!cleanMime || cleanMime === 'application/octet-stream') {
+        const lowerName = (file.name || '').toLowerCase();
+        if (lowerName.endsWith('.pdf')) cleanMime = 'application/pdf';
+        else if (lowerName.endsWith('.png')) cleanMime = 'image/png';
+        else if (lowerName.endsWith('.webp')) cleanMime = 'image/webp';
+        else cleanMime = 'image/jpeg';
+      }
+      const cleanBase64 = base64Data.replace(/\s/g, '');
+
+      const prompt = `Eres un auditor contable y fiscal español de élite. Analiza este extracto de LIBRO MAYOR (por ejemplo, subcuentas 477 IVA Repercutido / Devengado o 472 IVA Soportado) y extrae TODAS las líneas individuales de operaciones y facturas.
+
+REGLAS DE EXTRACCIÓN DEL LIBRO MAYOR:
+1. "empresa": Nombre de la empresa o sociedad que figura en el encabezado (ej: "TRASTEROS GUADALHORCE, S.L.").
+2. "subcuenta": Código y nombre de la subcuenta que se analiza (ej: "4770121 H.P. IVA Devengado 21%", "4720021 H.P. Iva Soportado 21%", "4720010 H.P.IVA SOPORTADO AL 10%").
+3. "lineas": Array con cada uno de los apuntes contables individuales.
+   - "asiento": Número de asiento contable (columna ASIEN., ej: "681", "745", "881").
+   - "fecha": Fecha del apunte en formato YYYY-MM-DD (convierte 01-07-26 a 2026-07-01).
+   - "contrapartida": Código de cuenta de contrapartida (ej: "4300014", "4100015", "4000007", "5720002").
+   - "concepto": Texto íntegro del concepto (ej: "N/FRA.Nº 359/26", "FRA.29393 O2", "LIQUID.EMISION RECIB", "FRA.1828872 EMASA").
+   - "numero": Si en el concepto aparece un número de factura (ej: "359/26", "A-001/26", "29393", "1828872"), extráelo limpio.
+   - "proveedor": Extrae o deduce el nombre del proveedor o cliente a partir del concepto o contrapartida (ej: para "FRA.29393 O2" -> "O2"; para "EMASA" -> "EMASA"; para "ENDESA" -> "ENDESA"; para cuentas de clientes 430... puedes poner "Cliente Fra 359/26").
+   - "iva": Importe de la cuota de IVA que figura en el apunte.
+     * En subcuentas 477 (IVA Devengado): las ventas ordinarias van en la columna HABER (ej: 10.41) y rectificativas en DEBE. Extrae la cuota en valor positivo.
+     * En subcuentas 472 (IVA Soportado): los gastos ordinarios van en la columna DEBE (ej: 5.21, 225.62). Extrae la cuota en valor positivo.
+   - "tipo_iva_pct": 21 si es subcuenta del 21%, 10 si es del 10%, 4 si es del 4%.
+   - "base": Calcula la Base Imponible: cuota_iva / (tipo_iva_pct / 100). Ejemplo: si iva es 10.41 al 21%, base = 49.57.
+   - "total": base + iva (o base - retención si hubiera).
+   - "tipo": "C" si es IVA devengado/repercutido (subcuenta 477, ingresos/clientes); "P" si es IVA soportado (subcuenta 472, compras/proveedores/gastos).
+4. IMPORTANTE: NO incluyas como línea las filas de sumas intermedias ("SUMAS ANTERIORES", "SUMA Y SIGUE") ni el asiento final de regularización o liquidación del trimestre ("REGULARIZACI LIQUID.IVA 3T 2026", "TOTAL SUBCUENTA").
+5. "total_subcuenta": Suma total oficial impresa en el documento al pie de la subcuenta ("TOTAL SUBCUENTA", ej: 2566.37 o 869.05).
+
+Devuelve ÚNICAMENTE un objeto JSON puro con esta estructura:
+{
+  "empresa": "TRASTEROS GUADALHORCE, S.L.",
+  "subcuenta": "4770121 H.P. IVA Devengado 21%",
+  "periodo": "01-07-26 / 30-09-26",
+  "total_subcuenta": 2566.37,
+  "lineas": [
+    {
+      "asiento": "681",
+      "fecha": "2026-07-01",
+      "contrapartida": "4300014",
+      "concepto": "N/FRA.Nº 359/26",
+      "numero": "359/26",
+      "proveedor": "Cliente Fra 359/26",
+      "nif": "",
+      "base": 49.57,
+      "iva": 10.41,
+      "tipo_iva_pct": 21,
+      "total": 59.98,
+      "tipo": "C"
+    }
+  ]
+}`;
+
+      const requestBody = {
+        contents: [
+          {
+            parts: [
+              { text: prompt },
+              {
+                inlineData: {
+                  mimeType: cleanMime,
+                  data: cleanBase64
+                }
+              }
+            ]
+          }
+        ],
+        generationConfig: {
+          temperature: 0.1
+        }
+      };
+
+      let lastError = null;
+      for (const modelToUse of modelsToTry) {
+        const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${modelToUse}:generateContent?key=${encodeURIComponent(apiKey)}`;
         try {
-          return JSON.parse(clean.substring(start, end + 1));
-        } catch (e) {
-          console.error('Error parseando substring JSON:', e);
+          console.log(`Intentando extracción de Libro Mayor con modelo: ${modelToUse}...`);
+          const response = await fetch(endpoint, {
+            method: 'POST',
+            headers: { 
+              'Content-Type': 'application/json',
+              'x-goog-api-key': apiKey
+            },
+            body: JSON.stringify(requestBody)
+          });
+
+          if (!response.ok) {
+            const errTxt = await response.text();
+            if (response.status === 404) {
+              lastError = new Error(`Modelo ${modelToUse} no encontrado (404)`);
+              continue;
+            }
+            lastError = new Error(`Error (${response.status}): ${errTxt.slice(0, 100)}`);
+            continue;
+          }
+
+          const result = await response.json();
+          const rawText = result.candidates?.[0]?.content?.parts?.[0]?.text;
+          if (!rawText) throw new Error('Respuesta vacía de Gemini');
+
+          if (modelToUse !== appState.model) {
+            appState.model = modelToUse;
+            localStorage.setItem(STORAGE_KEY_MODEL, modelToUse);
+            updateApiKeyBadge();
+          }
+
+          return parseLedgerJsonFromText(rawText);
+        } catch (err) {
+          lastError = err;
+          console.warn(`Error procesando Libro Mayor con ${modelToUse}:`, err);
         }
       }
-      return JSON.parse(clean);
+
+      throw lastError || new Error('No se pudo procesar el Libro Mayor');
+    }
+
+    function parseLedgerJsonFromText(rawText) {
+      if (!rawText) return { lineas: [] };
+      let clean = rawText.replace(/```json/gi, '').replace(/```/g, '').trim();
+      const start = clean.indexOf('{');
+      const end = clean.lastIndexOf('}');
+      if (start !== -1 && end !== -1) {
+        clean = clean.substring(start, end + 1);
+      }
+      clean = clean.replace(/\/\/.*$/gm, '').replace(/\/\*[\s\S]*?\*\//g, '');
+      clean = clean.replace(/,\s*([}\]])/g, '$1');
+
+      try {
+        const parsed = JSON.parse(clean);
+        if (parsed.lineas && Array.isArray(parsed.lineas)) {
+          return parsed;
+        }
+      } catch (e) {
+        console.warn('Fallo parseo JSON directo de Libro Mayor:', e);
+      }
+      return { lineas: [] };
     }
 
     function cleanNif(str) {
@@ -2851,13 +3476,18 @@ Los importes monetarios deben ser números decimales puros (sin símbolos €). 
                   onblur="updateInvoiceField('${inv.id}', 'total', this.innerText)">
               ${formatMoney(inv.total)} €
             </span>
+            ${inv.suplidos > 0 ? `
+              <div style="font-size: 0.68rem; font-weight: 600; color: #38bdf8; font-family: 'JetBrains Mono', monospace;" title="Incluye ${formatMoney(inv.suplidos)} € en cánones/tasas de suministro exentas de IVA">
+                +${formatMoney(inv.suplidos)} € cánones
+              </div>
+            ` : ''}
           </td>
-          <td style="text-align: center;">
-            <div class="tipo-selector" title="Tipo: ${inv.tipo === 'C' ? 'Cliente (IVA Repercutido)' : 'Proveedor (IVA Soportado)'}">
+          <td class="col-tipo" style="text-align: center;">
+            <div class="tipo-selector" title="Tipo: ${inv.tipo === 'C' ? 'C · Cliente (IVA Repercutido / A pagar)' : 'P · Proveedor (IVA Soportado / A deducir)'}">
               <button type="button" class="tipo-btn ${inv.tipo === 'P' || !inv.tipo ? 'active tipo-p' : ''}" 
-                      onclick="setInvoiceTipo('${inv.id}', 'P')" title="Proveedor / Gasto (IVA Soportado)">P</button>
+                      onclick="setInvoiceTipo('${inv.id}', 'P')" title="Proveedor / Gasto (IVA Soportado · A deducir)">P</button>
               <button type="button" class="tipo-btn ${inv.tipo === 'C' ? 'active tipo-c' : ''}" 
-                      onclick="setInvoiceTipo('${inv.id}', 'C')" title="Cliente / Venta (IVA Repercutido)">C</button>
+                      onclick="setInvoiceTipo('${inv.id}', 'C')" title="Cliente / Venta (IVA Repercutido · A pagar a Hacienda)">C</button>
             </div>
           </td>
           <td class="col-actions">
@@ -2951,19 +3581,24 @@ Los importes monetarios deben ser números decimales puros (sin símbolos €). 
                       onblur="updateInvoiceField('${inv.id}', 'total', this.innerText)">
                   ${formatMoney(inv.total)} €
                 </span>
+                ${inv.suplidos > 0 ? `
+                  <div style="font-size: 0.70rem; color: #38bdf8; font-family: 'JetBrains Mono', monospace; margin-top: 2px;">
+                    +${formatMoney(inv.suplidos)} € cánones / suplidos
+                  </div>
+                ` : ''}
               </div>
               <div class="card-field" style="grid-column: 1 / -1; display: flex; align-items: center; justify-content: space-between; background: var(--bg-surface-alt); padding: 8px 12px; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle);">
                 <div>
                   <span class="card-field-label" style="margin-bottom: 2px;">Naturaleza de Factura</span>
                   <div style="font-size: 0.74rem; font-weight: 600; color: ${inv.tipo === 'C' ? '#34d399' : '#60a5fa'};">
-                    ${inv.tipo === 'C' ? 'C · Factura Cliente (IVA Repercutido)' : 'P · Factura Proveedor (IVA Soportado)'}
+                    ${inv.tipo === 'C' ? 'C · Factura Cliente (IVA Repercutido · A pagar)' : 'P · Factura Proveedor (IVA Soportado · A deducir)'}
                   </div>
                 </div>
                 <div class="tipo-selector" title="Tipo: ${inv.tipo === 'C' ? 'Cliente (IVA Repercutido)' : 'Proveedor (IVA Soportado)'}">
                   <button type="button" class="tipo-btn ${inv.tipo === 'P' || !inv.tipo ? 'active tipo-p' : ''}" 
-                          onclick="setInvoiceTipo('${inv.id}', 'P')" title="Proveedor (IVA Soportado)">P (Proveedor)</button>
+                          onclick="setInvoiceTipo('${inv.id}', 'P')" title="Proveedor (IVA Soportado · A deducir)">P (Proveedor)</button>
                   <button type="button" class="tipo-btn ${inv.tipo === 'C' ? 'active tipo-c' : ''}" 
-                          onclick="setInvoiceTipo('${inv.id}', 'C')" title="Cliente (IVA Repercutido)">C (Cliente)</button>
+                          onclick="setInvoiceTipo('${inv.id}', 'C')" title="Cliente (IVA Repercutido · A pagar)">C (Cliente)</button>
                 </div>
               </div>
             </div>
@@ -2980,7 +3615,7 @@ Los importes monetarios deben ser números decimales puros (sin símbolos €). 
       if (!inv) return;
       inv.tipo = (tipo === 'C') ? 'C' : 'P';
       reevaluarAuditoria();
-      const desc = inv.tipo === 'C' ? 'Cliente (IVA Repercutido)' : 'Proveedor (IVA Soportado)';
+      const desc = inv.tipo === 'C' ? 'Cliente (IVA Repercutido · A pagar a Hacienda)' : 'Proveedor (IVA Soportado · A deducir)';
       showToast(`Factura asignada a ${desc}`, 'info');
     }
 
@@ -3160,11 +3795,70 @@ Los importes monetarios deben ser números decimales puros (sin símbolos €). 
       document.getElementById('kpi-total-importe').textContent = formatMoney(sumTotal) + ' €';
       document.getElementById('kpi-irpf-total').textContent = `IRPF retenido: ${formatMoney(sumIrpf)} €`;
 
-      // Footer sumatorios
-      document.getElementById('footer-sum-base').textContent = formatMoney(sumBase) + ' €';
-      document.getElementById('footer-sum-iva').textContent = formatMoney(sumIva) + ' €';
-      document.getElementById('footer-sum-irpf').textContent = formatMoney(sumIrpf) + ' €';
-      document.getElementById('footer-sum-total').textContent = formatMoney(sumTotal) + ' €';
+      // Footer: 1. Totales Globales de facturas listadas
+      const elFooterBase = document.getElementById('footer-sum-base');
+      const elFooterIva = document.getElementById('footer-sum-iva');
+      const elFooterIrpf = document.getElementById('footer-sum-irpf');
+      const elFooterTotal = document.getElementById('footer-sum-total');
+
+      if (elFooterBase) elFooterBase.textContent = formatMoney(sumBase) + ' €';
+      if (elFooterIva) elFooterIva.textContent = formatMoney(sumIva) + ' €';
+      if (elFooterIrpf) elFooterIrpf.textContent = formatMoney(sumIrpf) + ' €';
+      if (elFooterTotal) elFooterTotal.textContent = formatMoney(sumTotal) + ' €';
+
+      // Footer: Cánones / tasas / suplidos no sujetos a IVA acumulados
+      let sumSuplidos = 0;
+      appState.invoices.forEach(i => {
+        sumSuplidos = redondearFiscal(sumSuplidos + (i.suplidos || 0));
+      });
+      const canonesContainer = document.getElementById('footer-canones-detail');
+      const elSumSuplidos = document.getElementById('footer-sum-suplidos');
+      if (canonesContainer && elSumSuplidos) {
+        if (sumSuplidos > 0) {
+          canonesContainer.style.display = 'block';
+          elSumSuplidos.textContent = formatMoney(sumSuplidos) + ' €';
+        } else {
+          canonesContainer.style.display = 'none';
+        }
+      }
+
+      // Footer: 2. Liquidación Fiscal de IVA (C vs P en tiempo real)
+      const elIvaRep = document.getElementById('footer-iva-repercutido');
+      const elIvaSop = document.getElementById('footer-iva-soportado');
+      const elIvaResLabel = document.getElementById('footer-iva-result-label');
+      const elIvaResVal = document.getElementById('footer-iva-result-val');
+      const elIvaResState = document.getElementById('footer-iva-result-state');
+
+      if (elIvaRep) elIvaRep.textContent = formatMoney(ivaRepercutido) + ' €';
+      if (elIvaSop) elIvaSop.textContent = formatMoney(ivaSoportado) + ' €';
+
+      if (elIvaResVal && elIvaResLabel && elIvaResState) {
+        if (appState.invoices.length === 0) {
+          elIvaResLabel.textContent = 'Resultado Liquidación';
+          elIvaResVal.textContent = '0,00 €';
+          elIvaResVal.style.color = '#94a3b8';
+          elIvaResState.textContent = 'Sin facturas';
+          elIvaResState.className = 'tax-badge-state badge-neutral';
+        } else if (liquidacionIva > 0) {
+          elIvaResLabel.textContent = 'IVA A PAGAR (A INGRESAR)';
+          elIvaResVal.textContent = `+${formatMoney(liquidacionIva)} €`;
+          elIvaResVal.style.color = '#fbbf24';
+          elIvaResState.textContent = '⚠️ A ingresar en Hacienda (Mod. 303)';
+          elIvaResState.className = 'tax-badge-state badge-pagar';
+        } else if (liquidacionIva < 0) {
+          elIvaResLabel.textContent = 'IVA A DEVOLVER / COMPENSAR';
+          elIvaResVal.textContent = `${formatMoney(liquidacionIva)} €`;
+          elIvaResVal.style.color = '#34d399';
+          elIvaResState.textContent = '✓ A devolver / compensar a tu favor';
+          elIvaResState.className = 'tax-badge-state badge-devolver';
+        } else {
+          elIvaResLabel.textContent = 'RESULTADO LIQUIDACIÓN';
+          elIvaResVal.textContent = '0,00 €';
+          elIvaResVal.style.color = '#93c5fd';
+          elIvaResState.textContent = 'Liquidación compensada (0,00 €)';
+          elIvaResState.className = 'tax-badge-state badge-neutral';
+        }
+      }
     }
 
     /* ==========================================================================
@@ -4457,6 +5151,251 @@ Los importes monetarios deben ser números decimales puros (sin símbolos €). 
       appState.invoices = demoFacturas;
       reevaluarAuditoria();
       showToast('Cargadas facturas de prueba reales: puedes abrir su documento pulsando en «Doc. Original»', 'success');
+    }
+
+    /* Datos reales de demostración de Libro Mayor (Cuentas 477 y 472 del 3T) */
+    function loadSampleLedger() {
+      const pdfBlob = b64toBlob(SAMPLE_PDF_BASE64, 'application/pdf');
+      const pdfUrl = URL.createObjectURL(pdfBlob);
+
+      const demoLedgerRows = [
+        // --- SUBCUENTA 4770121: H.P. IVA Devengado 21% (Clientes / Ingresos [C]) ---
+        {
+          id: 'lm_demo_1',
+          fileName: 'Libro_Mayor_4770121_3T.pdf',
+          fileType: 'application/pdf',
+          fileUrl: pdfUrl,
+          proveedor: 'Cliente Fra 359/26',
+          nif: '4300014',
+          fecha: '2026-07-01',
+          numero: '359/26',
+          asiento: '681',
+          base: 49.57,
+          iva: 10.41,
+          irpf: 0,
+          total: 59.98,
+          tipo: 'C',
+          tipoIvaPct: 21,
+          esLibroMayor: true,
+          subcuenta: '4770121 H.P. IVA Devengado 21%'
+        },
+        {
+          id: 'lm_demo_2',
+          fileName: 'Libro_Mayor_4770121_3T.pdf',
+          fileType: 'application/pdf',
+          fileUrl: pdfUrl,
+          proveedor: 'Cliente Fra 360/26',
+          nif: '4300040',
+          fecha: '2026-07-01',
+          numero: '360/26',
+          asiento: '682',
+          base: 49.57,
+          iva: 10.41,
+          irpf: 0,
+          total: 59.98,
+          tipo: 'C',
+          tipoIvaPct: 21,
+          esLibroMayor: true,
+          subcuenta: '4770121 H.P. IVA Devengado 21%'
+        },
+        {
+          id: 'lm_demo_3',
+          fileName: 'Libro_Mayor_4770121_3T.pdf',
+          fileType: 'application/pdf',
+          fileUrl: pdfUrl,
+          proveedor: 'Cliente Fra 373/26',
+          nif: '4300022',
+          fecha: '2026-07-01',
+          numero: '373/26',
+          asiento: '695',
+          base: 53.71,
+          iva: 11.28,
+          irpf: 0,
+          total: 64.99,
+          tipo: 'C',
+          tipoIvaPct: 21,
+          esLibroMayor: true,
+          subcuenta: '4770121 H.P. IVA Devengado 21%'
+        },
+        {
+          id: 'lm_demo_4',
+          fileName: 'Libro_Mayor_4770121_3T.pdf',
+          fileType: 'application/pdf',
+          fileUrl: pdfUrl,
+          proveedor: 'Cliente Fra 378/26',
+          nif: '4300016',
+          fecha: '2026-07-01',
+          numero: '378/26',
+          asiento: '700',
+          base: 119.86,
+          iva: 25.17,
+          irpf: 0,
+          total: 145.03,
+          tipo: 'C',
+          tipoIvaPct: 21,
+          esLibroMayor: true,
+          subcuenta: '4770121 H.P. IVA Devengado 21%'
+        },
+        {
+          id: 'lm_demo_5',
+          fileName: 'Libro_Mayor_4770121_3T.pdf',
+          fileType: 'application/pdf',
+          fileUrl: pdfUrl,
+          proveedor: 'Cliente Fra A-001/26',
+          nif: '4300020',
+          fecha: '2026-07-01',
+          numero: 'A-001/26',
+          asiento: '744',
+          base: 198.33,
+          iva: 41.65,
+          irpf: 0,
+          total: 239.98,
+          tipo: 'C',
+          tipoIvaPct: 21,
+          esLibroMayor: true,
+          subcuenta: '4770121 H.P. IVA Devengado 21%'
+        },
+        // --- SUBCUENTA 4720010: H.P. IVA Soportado al 10% (Proveedores / Gastos [P]) ---
+        {
+          id: 'lm_demo_6',
+          fileName: 'Libro_Mayor_4720010_10pct.pdf',
+          fileType: 'application/pdf',
+          fileUrl: pdfUrl,
+          proveedor: 'EMASA (Agua y Saneamiento)',
+          nif: '4100016',
+          fecha: '2026-07-31',
+          numero: '1828872',
+          asiento: '881',
+          base: 8.10,
+          iva: 0.81,
+          irpf: 0,
+          total: 8.91,
+          tipo: 'P',
+          tipoIvaPct: 10,
+          esLibroMayor: true,
+          subcuenta: '4720010 H.P. IVA SOPORTADO AL 10%'
+        },
+        {
+          id: 'lm_demo_7',
+          fileName: 'Libro_Mayor_4720010_10pct.pdf',
+          fileType: 'application/pdf',
+          fileUrl: pdfUrl,
+          proveedor: 'EMASA (Agua y Saneamiento)',
+          nif: '4100016',
+          fecha: '2026-07-31',
+          numero: '1828873',
+          asiento: '882',
+          base: 16.30,
+          iva: 1.63,
+          irpf: 0,
+          total: 17.93,
+          tipo: 'P',
+          tipoIvaPct: 10,
+          esLibroMayor: true,
+          subcuenta: '4720010 H.P. IVA SOPORTADO AL 10%'
+        },
+        // --- SUBCUENTA 4720021: H.P. IVA Soportado 21% (Proveedores / Gastos [P]) ---
+        {
+          id: 'lm_demo_8',
+          fileName: 'Libro_Mayor_4720021_21pct.pdf',
+          fileType: 'application/pdf',
+          fileUrl: pdfUrl,
+          proveedor: 'O2 Telecomunicaciones',
+          nif: '4100015',
+          fecha: '2026-07-01',
+          numero: '29393',
+          asiento: '745',
+          base: 24.81,
+          iva: 5.21,
+          irpf: 0,
+          total: 30.02,
+          tipo: 'P',
+          tipoIvaPct: 21,
+          esLibroMayor: true,
+          subcuenta: '4720021 H.P. IVA Soportado 21%'
+        },
+        {
+          id: 'lm_demo_9',
+          fileName: 'Libro_Mayor_4720021_21pct.pdf',
+          fileType: 'application/pdf',
+          fileUrl: pdfUrl,
+          proveedor: 'INV.NAVIMA S.L.',
+          nif: '4100004',
+          fecha: '2026-07-01',
+          numero: 'A16',
+          asiento: '749',
+          base: 1074.38,
+          iva: 225.62,
+          irpf: 0,
+          total: 1300.00,
+          tipo: 'P',
+          tipoIvaPct: 21,
+          esLibroMayor: true,
+          subcuenta: '4720021 H.P. IVA Soportado 21%'
+        },
+        {
+          id: 'lm_demo_10',
+          fileName: 'Libro_Mayor_4720021_21pct.pdf',
+          fileType: 'application/pdf',
+          fileUrl: pdfUrl,
+          proveedor: 'ENDESA Energía',
+          nif: '4100024',
+          fecha: '2026-07-15',
+          numero: '29836334',
+          asiento: '845',
+          base: 77.19,
+          iva: 16.21,
+          irpf: 0,
+          total: 93.40,
+          tipo: 'P',
+          tipoIvaPct: 21,
+          esLibroMayor: true,
+          subcuenta: '4720021 H.P. IVA Soportado 21%'
+        },
+        {
+          id: 'lm_demo_11',
+          fileName: 'Libro_Mayor_4720021_21pct.pdf',
+          fileType: 'application/pdf',
+          fileUrl: pdfUrl,
+          proveedor: 'PROSEGUR Seguridad',
+          nif: '4100019',
+          fecha: '2026-07-31',
+          numero: '7425287',
+          asiento: '850',
+          base: 72.52,
+          iva: 15.23,
+          irpf: 0,
+          total: 87.75,
+          tipo: 'P',
+          tipoIvaPct: 21,
+          esLibroMayor: true,
+          subcuenta: '4720021 H.P. IVA Soportado 21%'
+        },
+        {
+          id: 'lm_demo_12',
+          fileName: 'Libro_Mayor_4720021_21pct.pdf',
+          fileType: 'application/pdf',
+          fileUrl: pdfUrl,
+          proveedor: 'MERCADONA S.A.',
+          nif: '4000007',
+          fecha: '2026-07-06',
+          numero: '3478574',
+          asiento: '762',
+          base: 12.95,
+          iva: 2.72,
+          irpf: 0,
+          total: 15.67,
+          tipo: 'P',
+          tipoIvaPct: 21,
+          esLibroMayor: true,
+          subcuenta: '4720021 H.P. IVA Soportado 21%'
+        }
+      ];
+
+      appState.invoices = demoLedgerRows;
+      setUploadMode('ledger');
+      reevaluarAuditoria();
+      showToast('Cargados extractos reales de Libro Mayor: Cuentas 477 (Repercutido) y 472 (Soportado)', 'success');
     }
 
     function b64toBlob(b64Data, contentType='', sliceSize=512) {
